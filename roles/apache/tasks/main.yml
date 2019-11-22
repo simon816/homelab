@@ -1,0 +1,24 @@
+- import_tasks: ssl.yml
+
+- name: Configure apache common headers
+  become: yes
+  copy:
+    src: common-headers.conf
+    dest: /etc/apache2/conf-available/common-headers.conf
+  notify:
+    - restart apache
+
+- name: Enable apache common headers
+  become: yes
+  command: a2enconf common-headers
+  args:
+    creates: /etc/apache2/config-enabled/common-headers.conf
+  notify:
+    - restart apache
+
+- name: Ensure apache is running
+  become: yes
+  service:
+    name: apache2
+    state: started
+

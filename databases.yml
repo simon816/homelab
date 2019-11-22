@@ -1,0 +1,132 @@
+---
+- hosts: dbserver
+  pre_tasks:
+
+  - name: Ensure secondary disk configured
+    become: yes
+    parted:
+      device: /dev/disk/by-path/pci-0000:00:09.0
+      number: 1
+      state: present
+
+  - name: Ensure secondary disk filesystem
+    become: yes
+    filesystem:
+      dev: /dev/disk/by-path/pci-0000:00:09.0-part1
+      fstype: ext4
+
+  - name: Mount secondary disk
+    become: yes
+    mount:
+      fstype: ext4
+      src: /dev/disk/by-path/pci-0000:00:09.0-part1
+      path: /srv
+      state: mounted
+
+  roles:
+    - intnet-node
+    - mariadb
+    - mongodb
+    - postgres
+
+  tasks:
+  - name: Ensure nextcloud db
+    become: yes
+    mysql_db:
+      login_unix_socket: /var/run/mysqld/mysqld.sock
+      name: "{{ db.nextcloud.name }}"
+      collation: utf8mb4_general_ci
+      encoding: utf8mb4
+      state: present
+
+  - name: Ensure nextcloud user
+    become: yes
+    mysql_user:
+      login_unix_socket: /var/run/mysqld/mysqld.sock
+      name: "{{ db.nextcloud.user }}"
+      password: "{{ db.nextcloud.pass }}"
+      priv: "{{ db.nextcloud.name }}.*:ALL"
+      host: 10.80.0.4
+      state: present
+
+  - name: Ensure wekan db and user
+    mongodb_user:
+      login_user: root
+      login_password: root
+      database: "{{ db.wekan.name }}"
+      name: "{{ db.wekan.user }}"
+      password: "{{ db.wekan.pass }}"
+      roles: 'dbAdmin,readWrite'
+
+  - name: Ensure xbrowsersync db and user
+    mongodb_user:
+      login_user: root
+      login_password: root
+      database: "{{ db.xbrowsersync.name }}"
+      name: "{{ db.xbrowsersync.user }}"
+      password: "{{ db.xbrowsersync.pass }}"
+      roles: "readWrite"
+    register: xbrowsersync_db
+
+  - name: Copy xbrowsersync init db file
+    template:
+      src: db/xbrowsersync-mongo.js
+      dest: /tmp/xbrowsersync-init.js
+    when: xbrowsersync_db.changed
+
+  - name: Init xbrowsersync db
+    command: mongo /tmp/xbrowsersync-init.js
+    when: xbrowsersync_db.changed
+
+  - name: Ensure gitlab db
+    become: yes
+    become_user: postgres
+    postgresql_db:
+      login_unix_socket: /var/run/postgresql/
+      name: "{{ db.gitlab.name }}"
+
+  - name: Ensure gitlab extensions
+    become: yes
+    become_user: postgres
+    postgresql_ext:
+      login_unix_socket: /var/run/postgresql/
+      name: pg_trgm
+      db: "{{ db.gitlab.name }}"
+
+  - name: Ensure gitlab user
+    become: yes
+    become_user: postgres
+    postgresql_user:
+      login_unix_socket: /var/run/postgresql/
+      name: "{{ db.gitlab.user }}"
+      password: "{{ db.gitlab.pass }}"
+
+  - name: Ensure Ore db
+    become: yes
+    become_user: postgres
+    postgresql_db:
+      login_unix_socket: /var/run/postgresql/
+      name: "{{ db.ore.name }}"
+
+  - name: Ensure Ore user
+    become: yes
+    become_user: postgres
+    postgresql_user:
+      login_unix_socket: /var/run/postgresql/
+      name: "{{ db.ore.user }}"
+      password: "{{ db.ore.pass }}"
+
+  - name: Ensure Pleroma db
+    become: yes
+    become_user: postgres
+    postgresql_db:
+      login_unix_socket: /var/run/postgresql/
+      name: "{{ db.pleroma.name }}"
+
+  - name: Ensure Pleroma user
+    become: yes
+    become_user: postgres
+    postgresql_user:
+      login_unix_socket: /var/run/postgresql/
+      name: "{{ db.pleroma.name }}"
+      password: "{{ db.pleroma.pass }}"

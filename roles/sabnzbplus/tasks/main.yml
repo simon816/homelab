@@ -1,0 +1,22 @@
+- name: Install packages
+  become: yes
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+      - sabnzbdplus
+
+- name: Configure sabnzbdplus daemon
+  become: yes
+  copy:
+    src: sabnzbdplus.initd
+    dest: /etc/default/sabnzbdplus
+  notify:
+    - restart sabnzbdplus
+
+- name: Enable sabnzbdplus service
+  become: yes
+  service:
+    name: sabnzbdplus
+    enabled: yes
+    state: started

@@ -1,0 +1,16 @@
+[Unit]
+Description=Sonarr Daemon
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/env mono /opt/NzbDrone/NzbDrone.exe -nobrowser
+User=sinkhole
+Group=sinkhole
+Restart=on-failure
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=sonarr
+
+[Install]
+WantedBy=multi-user.target

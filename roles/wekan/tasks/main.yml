@@ -1,0 +1,86 @@
+- name: Install wekan dependencies
+  become: yes
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+    - npm
+
+- name: Get is wekan downloaded
+  stat:
+    path: /var/www/wekan
+  register: wekan_dir_stat
+
+- name: Download wekan
+  get_url:
+    url: https://releases.wekan.team/wekan-2.46.tar.gz
+    checksum: "sha256:df6c0466b11596f2ce85c4f21242922d9e602c84146d9bf0cb1a36c7c2bad126"
+    dest: /tmp/
+  when: not wekan_dir_stat.stat.exists
+  register: wekan_dld
+
+- name: Extract wekan
+  become: yes
+  unarchive:
+    src: "{{ wekan_dld.dest }}"
+    remote_src: yes
+    creates: /var/www/wekan
+    dest: /var/www/
+    group: www-data
+    owner: www-data
+    extra_opts:
+    - --transform
+    - s,^bundle,wekan,
+  when: wekan_dld is not skipped
+
+- name: Install wekan
+  become: yes
+  environment:
+    NPM_CONFIG_CACHE: /tmp/npmcache
+  npm:
+    path: /var/www/wekan/programs/server
+    global: yes
+
+- name: Configure wekan service
+  become: yes
+  template:
+    src: wekan.service.j2
+    dest: /etc/systemd/system/wekan.service
+  notify:
+    - restart wekan service
+
+- name: Enable wekan service
+  become: yes
+  service:
+    name: wekan
+    enabled: yes
+    state: started
+
+- name: Enable Apache modules for wekan
+  become: yes
+  apache2_module:
+    state: present
+    name: "{{ item }}"
+  loop:
+    - proxy
+    - proxy_http
+    - proxy_wstunnel
+  notify:
+    - restart apache
+
+- name: Configure wekan apache
+  become: yes
+  copy:
+    src: wekan.conf
+    dest: /etc/apache2/sites-available/wekan.conf
+  notify:
+    - restart apache
+
+- name: Enable wekan apache site
+  become: yes
+  command: a2ensite wekan
+  args:
+    creates: /etc/apache2/sites-enabled/wekan.conf
+  notify:
+    - restart apache
+

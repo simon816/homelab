@@ -1,0 +1,19 @@
+- name: Install DNS
+  become: yes
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+      - bind9
+
+- name: Configure BIND
+  become: yes
+  copy:
+    src: named.conf.options
+    dest: /etc/bind/named.conf.options
+    mode: 0644
+    owner: root
+    group: bind
+  notify:
+    restart bind
+

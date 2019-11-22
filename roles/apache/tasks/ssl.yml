@@ -1,0 +1,61 @@
+- name: Ensure SSL public cert
+  become: yes
+  copy:
+    src: certs/simon816.com.pem
+    dest: /etc/ssl/certs/ssl-cert-simon816.pem
+
+- name: Ensure SSL private cert
+  become: yes
+  copy:
+    src: certs/simon816.com.key
+    dest: /etc/ssl/private/ssl-cert-simon816.key
+
+- name: Configure apache SSL
+  become: yes
+  copy:
+    src: simon816-ssl.conf
+    dest: /etc/apache2/conf-available/simon816-ssl.conf
+  notify:
+    - restart apache
+
+- name: Apache SSL common
+  become: yes
+  copy:
+    src: ssl-common.conf
+    dest: /etc/apache2/conf-available/ssl-common.conf
+  notify:
+    - restart apache
+
+- name: Enable apache common SSL
+  become: yes
+  command: a2enconf ssl-common
+  args:
+    creates: /etc/apache2/config-enabled/ssl-common.conf
+  notify:
+    - restart apache
+
+- name: Apache dhparams
+  become: yes
+  openssl_dhparam:
+    path: /etc/ssl/apache-dhparams.pem
+    size: 2048
+  notify:
+    - restart apache
+
+- name: Apache default SSL virtualhost
+  become: yes
+  copy:
+    src: default-ssl.conf
+    dest: /etc/apache2/sites-available/10-simon816-ssl.conf
+  notify:
+    - restart apache
+
+- name: Enable SSL
+  become: yes
+  command: a2ensite 10-simon816-ssl
+  args:
+    creates: /etc/apache2/sites-enabled/10-simon816-ssl.conf
+  notify:
+    - restart apache
+
+

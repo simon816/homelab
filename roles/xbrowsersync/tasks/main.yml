@@ -1,0 +1,85 @@
+- name: Install xbrowsersync dependencies
+  become: yes
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+    - npm
+    - git
+
+- name: Ensure xbrowsersync dir
+  become: yes
+  file:
+    name: /var/www/xbrowsersync
+    state: directory
+    owner: www-data
+    group: www-data
+
+- name: Ensure xbrowsersync files
+  become: yes
+  become_user: www-data
+  git:
+    repo: "https://github.com/xbrowsersync/api.git"
+    dest: /var/www/xbrowsersync
+
+- name: Install xbrowsersync
+  become: yes
+  become_user: www-data
+  environment:
+    NPM_CONFIG_CACHE: /tmp/npmcache
+  npm:
+    path: /var/www/xbrowsersync
+
+- name: xbrowsersync config
+  become: yes
+  template:
+    src: xbrowsersync.json
+    dest: /var/www/xbrowsersync/config/settings.json
+    owner: www-data
+    group: www-data
+  notify:
+    - restart xbrowsersync service
+
+- name: Configure xbrowsersync service
+  become: yes
+  template:
+    src: xbrowsersync.service.j2
+    dest: /etc/systemd/system/xbrowsersync.service
+  notify:
+    - restart xbrowsersync service
+
+- name: Enable xbrowsersync service
+  become: yes
+  service:
+    name: xbrowsersync
+    enabled: yes
+    state: started
+
+- name: Enable Apache modules for xbrowsersync
+  become: yes
+  apache2_module:
+    state: present
+    name: "{{ item }}"
+  loop:
+    - proxy
+    - proxy_http
+  notify:
+    - restart apache
+
+- name: Configure xbrowsersync apache
+  become: yes
+  copy:
+    src: xbrowsersync.conf
+    dest: /etc/apache2/sites-available/xbrowsersync.conf
+  notify:
+    - restart apache
+
+- name: Enable xbrowsersync apache site
+  become: yes
+  command: a2ensite xbrowsersync
+  args:
+    creates: /etc/apache2/sites-enabled/xbrowsersync.conf
+  notify:
+    - restart apache
+
+

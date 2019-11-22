@@ -1,0 +1,6 @@
+---
+- hosts: lab-servers
+  tasks:
+    - name: Reboot all
+      become: yes
+      reboot:

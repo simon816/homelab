@@ -1,0 +1,4 @@
+network:
+  ethernets:
+    ens9:
+      dhcp4: yes

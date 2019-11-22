@@ -1,0 +1,7 @@
+---
+- import_playbook: gateway.yml
+- import_playbook: databases.yml
+- import_playbook: cloud.yml
+- import_playbook: dev.yml
+- import_playbook: sinkhole.yml
+- import_playbook: controller.yml

@@ -1,0 +1,25 @@
+---
+- hosts: sinkhole
+  pre_tasks:
+  - name: sinkhole user
+    become: yes
+    user:
+      name: sinkhole
+      password_lock: yes
+      shell: /sbin/nologin
+
+  - name: Mount sinkhole NFS
+    become: yes
+    mount:
+      fstype: nfs
+      src: "10.80.0.1:/media/bd/sinkhole"
+      path: /srv
+      state: mounted
+
+  roles:
+    - intnet-node
+    - sonarr
+    - jackett
+    - deluge
+    - sabnzbplus
+    - nginx

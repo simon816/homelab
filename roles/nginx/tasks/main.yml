@@ -1,0 +1,58 @@
+- name: Install packages
+  become: yes
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+      - nginx
+
+- name: Remove nginx default site
+  become: yes
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify:
+    - restart nginx
+
+- name: Ensure SSL public cert
+  become: yes
+  copy:
+    src: certs/simon816.com.pem
+    dest: /etc/ssl/certs/ssl-cert-simon816.pem
+
+- name: Ensure SSL private cert
+  become: yes
+  copy:
+    src: certs/simon816.com.key
+    dest: /etc/ssl/private/ssl-cert-simon816.key
+
+- name: nginx dhparams
+  become: yes
+  openssl_dhparam:
+    path: /etc/ssl/nginx-dhparams.pem
+    size: 2048
+  notify:
+    - restart nginx
+
+- name: Configure nginx ssl
+  become: yes
+  copy:
+    src: ssl.conf
+    dest: /etc/nginx/conf.d/ssl.conf
+  notify:
+    - restart nginx
+
+- name: Configure nginx
+  become: yes
+  copy:
+    src: nginx.sinkhole.conf
+    dest: /etc/nginx/sites-enabled/sinkhole-sites
+  notify:
+    - restart nginx
+
+- name: Enable nginx service
+  become: yes
+  service:
+    name: nginx
+    enabled: yes
+    state: started

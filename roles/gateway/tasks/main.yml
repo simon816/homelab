@@ -1,0 +1,82 @@
+- name: Configure external interface
+  become: yes
+  copy:
+    src: gateway-netplan.yaml
+    dest: /etc/netplan/10-gateway.yaml
+  register: netplan_ready
+
+- name: apply netplan
+  become: yes
+  command: netplan apply
+  when: netplan_ready.changed
+#    notify:
+#      - apply netplan
+
+- name: IP Forward
+  become: yes
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: "1"
+    sysctl_set: yes
+    state: present
+    reload: yes
+
+- name: Install persistent iptables
+  become: yes
+  apt:
+    name: iptables-persistent
+  notify:
+    - save iptables
+
+- name: Install openvpn
+  become: yes
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+      - openvpn
+      - openvpn-systemd-resolved
+
+- name: Install VPN config
+  become: yes
+  copy:
+    src: vpn-config/
+    dest: /etc/openvpn/client/
+  notify:
+    - restart vpn
+
+- name: Ensure upstream VPN started
+  become: yes
+  service:
+    name: openvpn-client@upstream
+    state: started
+    enabled: yes
+
+- name: Configure iptables
+  become: yes
+  iptables:
+    table: nat
+    chain: POSTROUTING
+    out_interface: tun0
+    source: 10.80.0.0/24 # not strictly nessesary
+    jump: MASQUERADE
+  notify:
+    - save iptables
+
+- name: iptables DNS # See https://stackoverflow.com/questions/12945233/iptables-forward-and-input
+  become: yes
+  iptables:
+    table: nat
+    chain: PREROUTING
+    source: "!10.80.0.1/32" # hypervisor won't get redirected to VPN
+    in_interface: ens3
+    protocol: "{{ item }}"
+    match: "{{ item }}"
+    destination_port: "53"
+    jump: DNAT
+    to_destination: "1.1.1.1:53"
+  loop:
+    - udp
+    - tcp
+  notify:
+    - save iptables

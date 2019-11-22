@@ -1,0 +1,25 @@
+---
+- hosts: controller
+#  roles:
+#    - intnet-node
+  tasks:
+    - name: Configure intnet netplan
+      become: yes
+      file:
+        src: net/controller-intnet.yaml
+        dest: /etc/netplan/10-intnet.yaml
+      notify:
+        - apply netplan
+
+    - name: Ensure ansible log directory
+      become: yes
+      file:
+        path: /var/log/ansible
+        state: directory
+        owner: ansible
+        group: ansible
+
+  handlers:
+    - name: apply netplan
+      become: yes
+      command: netplan apply

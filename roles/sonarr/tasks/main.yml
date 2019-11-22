@@ -1,0 +1,33 @@
+- name: Ensure apt keys
+  become: yes
+  apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: "0xA236C58F409091A18ACA53CBEBFF6B99D9B78493"
+
+- name: Ensure apt repositories
+  become: yes
+  apt_repository:
+    repo: "deb https://apt.sonarr.tv/ master main"
+
+- name: Install packages
+  become: yes
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+      - nzbdrone
+
+- name: Configure sonarr service
+  become: yes
+  template:
+    src: sonarr.service.j2
+    dest: /etc/systemd/system/sonarr.service
+  notify:
+    - restart sonarr service
+
+- name: Enable sonarr service
+  become: yes
+  service:
+    name: sonarr
+    enabled: yes
+    state: started

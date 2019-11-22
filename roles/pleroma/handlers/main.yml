@@ -1,0 +1,6 @@
+- name: restart pleroma service
+  become: yes
+  service:
+    daemon_reload: yes
+    name: pleroma
+    state: restarted

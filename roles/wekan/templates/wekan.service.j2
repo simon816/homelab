@@ -1,0 +1,36 @@
+# Based on https://github.com/wekan/wekan/wiki/Source
+# See https://github.com/wekan/wekan/blob/edge/releases/virtualbox/start-wekan.sh
+# for environment variables
+
+[Unit]
+Description=Wekan server
+Documentation=https://github.com/wekan/wekan
+After=network-online.target
+Wants=network-online.target
+Wants=systemd-networkd-wait-online.service
+
+[Service]
+ExecStart=/usr/bin/env node /var/www/wekan/main.js
+Restart=on-failure
+StartLimitInterval=86400
+StartLimitBurst=5
+RestartSec=10
+ExecReload=/bin/kill -USR1 $MAINPID
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=Wekan
+User=www-data
+Group=www-data
+Environment=NODE_ENV=production
+Environment=BIND_IP=127.0.0.1
+Environment=PORT=8001
+Environment=HTTP_FORWARDED_COUNT=1
+Environment=MONGO_URL='mongodb://{{ db.wekan.user }}:{{ db.wekan.pass }}@{{ db.wekan.host }}:{{ db.wekan.port }}/{{ db.wekan.name }}'
+Environment=ROOT_URL='https://wekan.simon816.com/'
+Environment=MAIL_URL='smtp://localhost/'
+Environment=WITH_API=true
+Environment=BROWSER_POLICY_ENABLED=true
+
+[Install]
+WantedBy=multi-user.target

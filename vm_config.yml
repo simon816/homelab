@@ -1,0 +1,67 @@
+---
+- hosts: hypervisor
+  remote_user: simon
+  tasks:
+  - name: Define intnet
+    virt_net:
+      command: define
+      name: intnet
+      xml: '{{ lookup("file", "net/intnet.xml") }}'
+  - name: Ensure intnet active
+    virt_net:
+      name: intnet
+      state: active
+  - name: Autostart intnet
+    virt_net:
+      name: intnet
+      autostart: yes
+  - name: Redefine controller
+    virt:
+      name: controller
+      command: define
+      xml: '{{ lookup("template", "vm/controller.xml.j2") }}'
+  - name: Provision Gateway
+    virt:
+      name: gateway
+      command: define
+      xml: '{{ lookup("template", "vm/gateway.xml.j2") }}'
+  - name: Provision Cloud
+    virt:
+      name: cloud
+      command: define
+      xml: '{{ lookup("template", "vm/cloud.xml.j2") }}'
+  - name: Provision DB
+    virt:
+      name: dbserver
+      command: define
+      xml: '{{ lookup("template", "vm/dbserver.xml.j2") }}'
+  - name: Provision sinkhole
+    virt:
+      name: sinkhole
+      command: define
+      xml: '{{ lookup("template", "vm/sinkhole.xml.j2") }}'
+  - name: Provision dev
+    virt:
+      name: dev
+      command: define
+      xml: '{{ lookup("template", "vm/dev.xml.j2") }}'
+  - name: Ensure gateway is running
+    virt:
+      name: gateway
+      state: running
+  - name: Ensure DB is running
+    virt:
+      name: dbserver
+      state: running
+  - name: Ensure cloud is running
+    virt:
+      name: cloud
+      state: running
+  - name: Ensure sinkhole is running
+    virt:
+      name: sinkhole
+      state: running
+  - name: Ensure dev is running
+    virt:
+      name: dev
+      state: running

@@ -1,0 +1,7 @@
+- name: Route to gateway
+  become: yes
+  template:
+    src: gateway-route.yaml
+    dest: /etc/netplan/10-static-cfg.yaml
+  notify:
+    - apply netplan

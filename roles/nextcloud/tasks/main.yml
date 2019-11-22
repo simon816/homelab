@@ -1,0 +1,143 @@
+- name: Install nextcloud dependencies
+  become: yes
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+    - apache2
+    - libapache2-mod-php
+    - php-gd
+    - php-json
+    - php-mysql
+    - php-curl
+    - php-mbstring
+    - php-intl
+    - php-imagick
+    - php-xml
+    - php-zip
+
+- name: PHP configuration
+  become: yes
+  copy:
+    src: nextcloud-php.ini
+    dest: /etc/php/7.2/apache2/conf.d/50-nextcloud.ini
+  notify:
+    - restart apache
+
+- name: Make nextcloud data directory
+  become: yes
+  file:
+    path: /srv/nextcloud
+    state: directory
+    owner: www-data
+    group: www-data
+
+- name: Mount NFS
+  become: yes
+  mount:
+    fstype: nfs
+    src: "10.80.0.1:/srv/nextcloud"
+    path: /srv/nextcloud
+    state: mounted
+
+- name: Get is nextcloud downloaded
+  stat:
+    path: /var/www/nextcloud
+  register: nextcloud_dir_stat
+
+- name: Download nextcloud
+  get_url:
+    url: https://download.nextcloud.com/server/releases/nextcloud-15.0.4.tar.bz2
+    checksum: "sha256:f87db047c174f563e391a22c959d9ace767ca14ef0f97fc394f3061fc63d8f77"
+    dest: /tmp/
+  when: not nextcloud_dir_stat.stat.exists
+  register: nextcloud_tar
+
+- name: Install nextcloud
+  become: yes
+  unarchive:
+    src: "{{ nextcloud_tar.dest }}"
+    remote_src: yes
+    creates: /var/www/nextcloud
+    dest: /var/www/
+    group: www-data
+    owner: www-data
+  when: nextcloud_tar is not skipped
+
+- name: Enable Apache modules for nextcloud
+  become: yes
+  apache2_module:
+    state: present
+    name: "{{ item }}"
+  loop:
+    - rewrite
+    - headers
+    - env
+    - dir
+    - mime
+    - ssl
+  notify:
+    - restart apache
+
+- name: Configure nextcloud apache
+  become: yes
+  copy:
+    src: nextcloud.conf
+    dest: /etc/apache2/sites-available/nextcloud.conf
+  notify:
+    - restart apache
+
+- name: Enable nextcloud
+  become: yes
+  command: a2ensite nextcloud
+  args:
+    creates: /etc/apache2/sites-enabled/nextcloud.conf
+  notify:
+    - restart apache
+
+- name: Get nextcloud status
+  become: yes
+  become_user: www-data
+  command: php /var/www/nextcloud/occ status --no-warnings --output=json
+  register: nextcloud_status
+
+- name: First-time Nextcloud installation
+  become: yes
+  become_user: www-data
+  command: >
+      php occ maintenance:install
+      --database mysql
+      --database-name {{ db.nextcloud.name|quote }}
+      --database-host {{ db.nextcloud.host|quote }}
+      --database-port {{ db.nextcloud.port|quote }}
+      --database-user {{ db.nextcloud.user|quote }}
+      --database-pass {{ db.nextcloud.pass|quote }}
+      --admin-user simon
+      --admin-pass changeme
+      --data-dir /srv/nextcloud
+      --no-interaction
+  args:
+    chdir: /var/www/nextcloud
+  when: nextcloud_status.changed and not (nextcloud_status.stdout | from_json).installed
+
+- name: Nextcloud config
+  become: yes
+  become_user: www-data
+  shell: |
+      php /var/www/nextcloud/occ config:system:set mysql.utf8mb4 --type boolean --value="true"
+      php /var/www/nextcloud/occ config:system:set htaccess.RewriteBase --value='/'
+      php /var/www/nextcloud/occ config:system:set default_locale --value='en_GB'
+      php /var/www/nextcloud/occ config:system:set trusted_domains 1 --value="nextcloud.simon816.com"
+      php /var/www/nextcloud/occ maintenance:repair
+      php /var/www/nextcloud/occ db:convert-filecache-bigint --no-interaction
+      php /var/www/nextcloud/occ maintenance:update:htaccess
+  when: nextcloud_status.changed and not (nextcloud_status.stdout | from_json).installed
+
+- name: Ensure Nextcloud cron
+  become: yes
+  cron:
+    minute: "*/15"
+    name: nextcloud_cron
+    user: www-data
+    job: php -f /var/www/nextcloud/cron.php
+

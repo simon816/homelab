@@ -1,0 +1,58 @@
+- name: Install DB packages
+  become: yes
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+    - mariadb-server
+    - python3-pymysql
+
+- name: Ensure mariadb directory
+  become: yes
+  file:
+    path: /srv/mariadb
+    owner: mysql
+    group: mysql
+    state: directory
+
+- name: Get mariadb data dir
+  stat:
+    path: /var/lib/mysql
+  register: mariadb_data
+
+- name: Stop mariadb if first run
+  become: yes
+  service:
+    name: mariadb
+    state: stopped
+  when: not mariadb_data.stat.islnk
+
+- name: Remove default mariadb data
+  become: yes
+  file:
+    path: /var/lib/mysql
+    state: absent
+  when: not mariadb_data.stat.islnk
+
+- name: Link mariadb data
+  become: yes
+  file:
+    src: /srv/mariadb
+    dest: /var/lib/mysql
+    force: yes
+    state: link
+    owner: mysql
+    group: mysql
+
+- name: Setup initial mariadb data
+  become: yes
+  command: mysql_install_db
+  when: not mariadb_data.stat.islnk
+
+- name: Copy mariadb configuration
+  become: yes
+  copy:
+    src: config.cnf
+    dest: /etc/mysql/mariadb.conf.d/60-dbserver.cnf
+  notify:
+    - restart mariadb

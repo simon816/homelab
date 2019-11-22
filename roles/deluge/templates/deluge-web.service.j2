@@ -1,0 +1,21 @@
+[Unit]
+Description=Deluge Bittorrent Client Web Interface
+Documentation=man:deluge-web
+After=network-online.target deluged.service
+Wants=deluged.service
+
+[Service]
+User=sinkhole
+Group=sinkhole
+UMask=027
+# This 5 second delay is necessary on some systems
+# to ensure deluged has been fully started
+ExecStartPre=/bin/sleep 5
+ExecStart=/usr/bin/deluge-web
+Restart=on-failure
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=deluge-web
+
+[Install]
+WantedBy=multi-user.target

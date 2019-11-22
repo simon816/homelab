@@ -1,0 +1,83 @@
+- name: Install packages
+  become: yes
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+      - libcurl4-openssl-dev
+
+- name: Get is Jackett installed
+  stat:
+    path: /opt/Jackett
+  register: jackett_stat
+
+- name: Download Jackett
+  get_url:
+    url: "https://github.com/Jackett/Jackett/releases/download/v0.10.731/Jackett.Binaries.Mono.tar.gz"
+    checksum: "sha256:13d0b8024d9a41df5ff2f186e16708d4769fee4935680ba9391150256b600bb3"
+    dest: /tmp/
+  register: jackett_dld
+  when: not jackett_stat.stat.exists
+
+- name: Install Jackett
+  become: yes
+  unarchive:
+    src: "{{ jackett_dld.dest }}"
+    remote_src: yes
+    creates: /opt/Jackett
+    dest: /opt
+    owner: sinkhole
+    group: sinkhole
+  when: jackett_dld is not skipped
+
+- name: Ensure jacket config dir
+  become: yes
+  become_user: sinkhole
+  file:
+    path: /home/sinkhole/.config/Jackett
+    state: directory
+
+- name: Get jackett data dir
+  stat:
+    path: /home/sinkhole/.config/Jackett/Indexers
+  register: jackett_data_stat
+
+- name: Remove default jackett data dir
+  become: yes
+  become_user: sinkhole
+  file:
+    path: /home/sinkhole/.config/Jackett/Indexers
+    state: absent
+  when: not jackett_data_stat.stat.islnk
+
+- name: Link jackett data
+  become: yes
+  become_user: sinkhole
+  file:
+    src: /srv/jackett
+    dest: /home/sinkhole/.config/Jackett/Indexers
+    state: link
+
+- name: Configure jackett server
+  become: yes
+  become_user: sinkhole
+  copy:
+    src: jackett-conf.json
+    dest: /home/sinkhole/.config/Jackett/ServerConfig.json
+  notify:
+    - restart jackett service
+
+- name: Configure jackett service
+  become: yes
+  template:
+    src: jackett.service.j2
+    dest: /etc/systemd/system/jackett.service
+  notify:
+    - restart jackett service
+
+- name: Enable jackett service
+  become: yes
+  service:
+    name: jackett
+    enabled: yes
+    state: started

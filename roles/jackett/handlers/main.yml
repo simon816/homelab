@@ -1,0 +1,6 @@
+- name: restart jackett service
+  become: yes
+  systemd:
+    daemon_reload: yes
+    name: jackett
+    state: restarted

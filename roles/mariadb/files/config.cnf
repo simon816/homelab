@@ -1,0 +1,12 @@
+[mysqld]
+bind-address = 10.80.0.5
+
+# For Nextcloud
+# Needed because mariadb version is 10.1
+# https://docs.nextcloud.com/server/15/admin_manual/configuration_database/mysql_4byte_support.html
+innodb_large_prefix=true
+innodb_file_format=barracuda
+innodb_file_per_table=1
+
+# Prevent delays when not connected to the internet
+skip_name_resolve=true

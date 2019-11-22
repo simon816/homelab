@@ -1,0 +1,9 @@
+- name: save iptables
+  become: yes
+  shell: iptables-save > /etc/iptables/rules.v4
+
+- name: restart vpn
+  become: yes
+  service:
+    name: openvpn-client@upstream
+    state: restarted

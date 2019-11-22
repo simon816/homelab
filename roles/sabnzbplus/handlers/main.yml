@@ -1,0 +1,5 @@
+- name: restart sabnzbdplus
+  become: yes
+  service:
+    name: sabnzbdplus
+    state: restarted

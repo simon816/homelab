@@ -1,0 +1,16 @@
+---
+- hosts: cloud
+
+  tasks:
+  - name: Install NFS
+    become: yes
+    apt:
+      name: nfs-common
+
+  roles:
+    - intnet-node
+    - apache
+    - nextcloud
+    - xbrowsersync
+    - wekan
+    - pleroma

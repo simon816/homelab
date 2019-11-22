@@ -1,0 +1,39 @@
+---
+
+db:
+  nextcloud:
+    name: nextcloud
+    host: 10.80.0.5
+    port: 3306
+    user: nextcloud
+    pass: nextcloud
+  wekan:
+    name: wekan
+    host: 10.80.0.5
+    port: 27017
+    user: wekan
+    pass: wekan
+  xbrowsersync:
+    name: xbrowsersync
+    host: 10.80.0.5
+    port: 27017
+    user: xbrowsersyncdb
+    pass: xbrowsersync
+  gitlab:
+    name: gitlab
+    host: 10.80.0.5
+    port: 5432
+    user: gitlab
+    pass: gitlab
+  ore:
+    name: ore
+    host: 10.80.0.5
+    port: 5432
+    user: oreuser
+    pass: oredbpass
+  pleroma:
+    name: pleroma
+    host: 10.80.0.5
+    port: 5432
+    user: pleroma
+    pass: pleroma

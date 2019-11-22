@@ -1,0 +1,12 @@
+- name: restart deluged
+  become: yes
+  service:
+    name: deluged
+    state: restarted
+
+- name: restart deluge web service
+  become: yes
+  systemd:
+    daemon_reload: yes
+    name: deluge-web
+    state: restarted

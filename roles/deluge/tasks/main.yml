@@ -1,0 +1,58 @@
+- name: Install packages
+  become: yes
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+      - deluged
+      - deluge-web
+      - deluge-console
+
+- name: Get deluge download dir
+  stat:
+    path: /var/lib/deluged/Downloads
+  register: deluge_dir_stat
+
+- name: Remove default deluge downloads
+  become: yes
+  file:
+    path: /var/lib/deluged/Downloads
+    state: absent
+  when: not deluge_dir_stat.stat.islnk
+
+- name: Link deluge downloads
+  become: yes
+  file:
+    src: /srv/downloads
+    dest: /var/lib/deluged/Downloads
+    state: link
+
+- name: Configure deluge daemon
+  become: yes
+  copy:
+    src: deluged.initd
+    dest: /etc/default/deluged
+  notify:
+    - restart deluged
+
+- name: Configure deluge web service
+  become: yes
+  template:
+    src: deluge-web.service.j2
+    dest: /etc/systemd/system/deluge-web.service
+  notify:
+    - restart deluge web service
+
+- name: Enable deluge daemon service
+  become: yes
+  service:
+    name: deluged
+    enabled: yes
+    state: started
+
+- name: Enable deluge web service
+  become: yes
+  service:
+    name: deluge-web
+    enabled: yes
+    state: started

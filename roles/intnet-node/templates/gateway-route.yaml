@@ -1,0 +1,8 @@
+network:
+  ethernets:
+    ens3:
+      dhcp4: no
+      addresses: [{{ inventory_hostname }}/24]
+      gateway4: 10.80.0.2
+      nameservers:
+        addresses: [1.1.1.1, 1.0.0.1] #192.168.0.21]

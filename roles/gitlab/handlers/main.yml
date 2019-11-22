@@ -1,0 +1,7 @@
+- name: reconfigure gitlab
+  become: yes
+  command: gitlab-ctl reconfigure
+
+- name: reload gitlab nginx
+  become: yes
+  command: gitlab-ctl hup nginx

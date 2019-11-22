@@ -1,0 +1,19 @@
+- name: Ensure apt keys
+  become: yes
+  apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: "3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF"
+
+- name: Ensure apt repositories
+  become: yes
+  apt_repository:
+    repo: "deb https://download.mono-project.com/repo/ubuntu stable-bionic main"
+
+- name: Install packages
+  become: yes
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+      - mono-devel
+      - ca-certificates-mono

@@ -1,0 +1,78 @@
+- name: Install DB packages
+  become: yes
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+    - mongodb-server
+    - python3-pymongo
+
+- name: Ensure mongodb directory
+  become: yes
+  file:
+    path: /srv/mongodb
+    owner: mongodb
+    group: mongodb
+    state: directory
+
+- name: Get mongodb data dir
+  stat:
+    path: /var/lib/mongodb
+  register: mongodb_data
+
+- name: Stop mongodb if first run
+  become: yes
+  service:
+    name: mongodb
+    state: stopped
+  when: not mongodb_data.stat.islnk
+
+- name: Remove default mongodb data
+  become: yes
+  file:
+    path: /var/lib/mongodb
+    state: absent
+  when: not mongodb_data.stat.islnk
+
+- name: Link mongodb data
+  become: yes
+  file:
+    src: /srv/mongodb
+    dest: /var/lib/mongodb
+    force: yes
+    state: link
+    owner: mongodb
+    group: mongodb
+
+- name: Ensure mongodb started
+  become: yes
+  service:
+    name: mongodb
+    state: started
+
+- name: Configure mongodb IP
+  become: yes
+  lineinfile:
+    path: /etc/mongodb.conf
+    regexp: '^bind_ip = .+'
+    line: "bind_ip = 0.0.0.0"
+  notify:
+    - restart mongodb
+
+- name: Configure mongodb auth
+  become: yes
+  lineinfile:
+    path: /etc/mongodb.conf
+    regexp: '^#?auth = .+'
+    line: 'auth = true'
+  notify:
+    - restart mongodb
+
+- name: Ensure mongodb root user
+  mongodb_user:
+    database: admin
+    name: root
+    password: root
+    roles: root
+  register: mongo_root_check
+  failed_when: false #"('rc' in mongo_root_check and mongo_root_check.rc != 0) or 'there are no users authenticated' not in mongo_root_check.stdout"

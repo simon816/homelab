@@ -1,0 +1,6 @@
+- name: restart xbrowsersync service
+  become: yes
+  systemd:
+    daemon_reload: yes
+    name: xbrowsersync
+    state: restarted

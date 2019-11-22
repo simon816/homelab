@@ -1,0 +1,5 @@
+---
+- hosts: dev
+  roles:
+    - intnet-node
+    - gitlab

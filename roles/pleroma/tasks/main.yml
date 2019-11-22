@@ -1,0 +1,136 @@
+- name: Install pleroma dependencies
+  become: yes
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+    - unzip
+    - libncurses5
+
+- name: Get is pleroma installed
+  stat:
+    path: /var/www/pleroma
+  register: pleroma_stat
+
+- name: Download pleroma
+  get_url:
+    url: "https://git.pleroma.social/pleroma/pleroma/-/jobs/50394/artifacts/download"
+    checksum: "sha256:715d6a480b188f387b358384c07105ccd8ebb0e9cd4307a6fcac7ee760b29968"
+    dest: /tmp/
+  register: pleroma_dld
+  when: not pleroma_stat.stat.exists
+
+- name: Extract pleroma
+  unarchive:
+    src: "{{ pleroma_dld.dest }}"
+    remote_src: yes
+    creates: /tmp/release
+    dest: /tmp
+  when: pleroma_dld is not skipped
+
+- name: Install pleroma
+  become: yes
+  copy:
+    remote_src: yes
+    src: /tmp/release/
+    dest: /var/www/pleroma
+    owner: www-data
+    group: www-data
+  when: pleroma_dld is not skipped
+
+- name: Ensure pleroma uploads directory
+  become: yes
+  become_user: www-data
+  file:
+    path: /var/www/pleroma/uploads
+    state: directory
+
+- name: Ensure pleroma static directory
+  become: yes
+  become_user: www-data
+  file:
+    path: /var/www/pleroma/static
+    state: directory
+
+- name: Ensure pleroma config directory
+  become: yes
+  become_user: www-data
+  file:
+    path: /var/www/pleroma/config
+    state: directory
+
+- name: First time pleroma configuration
+  become: yes
+  become_user: www-data
+  # This doesn't work in current version, need to wait for update
+  # Also need db port
+  command: >
+      /var/www/pleroma/bin/pleroma_ctl instance gen
+      --output /var/www/pleroma/config/config.exs
+      --output-psql /tmp/pleroma_sql.psql
+      --domain pleroma.simon816.com
+      --instance-name "Pleroma/Simon816"
+      --admin-email "me@simon816.com"
+      --notify-email "me@simon816.com"
+      --dbhost {{ db.pleroma.host|quote }}
+      --dbname {{ db.pleroma.name|quote }}
+      --dbuser {{ db.pleroma.user|quote }}
+      --dbpass {{ db.pleroma.pass|quote }}
+      --rum n
+      --indexable n
+      --db-configurable n
+      --uploads-dir /var/www/pleroma/uploads
+      --static-dir /var/www/pleroma/static
+      --listen-ip 127.0.0.1
+      --listen-port 4000
+  when: pleroma_dld is not skipped
+
+- name: Migrate pleroma database
+  become: yes
+  become_user: www-data
+  command: /var/www/pleroma/bin/pleroma_ctl migrate
+  environment:
+    PLEROMA_CONFIG_PATH: /var/www/pleroma/config/config.exs
+
+- name: Configure pleroma service
+  become: yes
+  template:
+    src: pleroma.service.j2
+    dest: /etc/systemd/system/pleroma.service
+  notify:
+    - restart pleroma service
+
+- name: Enable pleroma service
+  become: yes
+  service:
+    name: pleroma
+    enabled: yes
+    state: started
+
+- name: Enable Apache modules for pleroma
+  become: yes
+  apache2_module:
+    state: present
+    name: "{{ item }}"
+  loop:
+    - proxy
+    - proxy_http
+  notify:
+    - restart apache
+
+- name: Configure pleroma apache
+  become: yes
+  copy:
+    src: pleroma.conf
+    dest: /etc/apache2/sites-available/pleroma.conf
+  notify:
+    - restart apache
+
+- name: Enable pleroma apache site
+  become: yes
+  command: a2ensite pleroma
+  args:
+    creates: /etc/apache2/sites-enabled/pleroma.conf
+  notify:
+    - restart apache
+

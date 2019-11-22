@@ -1,0 +1,16 @@
+[Unit]
+Description=Jackett Daemon
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/env mono /opt/Jackett/JackettConsole.exe --NoRestart
+User=sinkhole
+Group=sinkhole
+Restart=always
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=jackett
+
+[Install]
+WantedBy=multi-user.target

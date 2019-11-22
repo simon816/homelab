@@ -1,0 +1,9 @@
+---
+- hosts: lab-servers
+  tasks:
+    - name: Update packages
+      become: yes
+      apt:
+        autoremove: yes
+        update_cache: yes
+        upgrade: yes

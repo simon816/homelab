@@ -1,0 +1,6 @@
+- name: restart wekan service
+  become: yes
+  systemd:
+    daemon_reload: yes
+    name: wekan
+    state: restarted
