@@ -1,0 +1,41 @@
+#!/bin/bash
+
+basedir=/var/spool/backup
+
+run_backup() {
+    name="$1"
+    src="$2"
+    if [[ -z "$src" ]] || [[ -z "$name" ]]
+    then
+        echo "Configuration error"
+        exit 1
+    fi
+
+    dest="$basedir/$name"
+
+    if [[ -d "$dest" ]]
+    then
+        echo "Backup path $dest exists. Ignoring"
+        return
+    fi
+
+    sudo rsync -a "$src" "$dest"
+}
+
+{% if backup_paths is defined %}{% for name, path in backup_paths.items() %}
+run_backup "{{ name }}" "{{ path }}"
+{% endfor %}{% endif %}
+
+{% if backup_scripts is defined %}{% for name, script in backup_scripts.items() %}
+
+name="{{ name }}"
+
+perform_backup() {
+    run_backup "$name" "$1"
+}
+script() {
+{{ script }}
+}
+script
+
+{% endfor %}{% endif %}

@@ -1,0 +1,26 @@
+- name: Ensure backup spool directory
+  become: yes
+  file:
+    path: /var/spool/backup
+    state: directory
+    owner: ansible
+    group: ansible
+    mode: 0700
+
+- name: Ensure backup script
+  become: yes
+  template:
+    src: run-backup.j2
+    dest: /usr/local/bin/run-spool-backup
+    owner: ansible
+    group: ansible
+    mode: 0700
+
+- name: Ensure backup cron
+  become: yes
+  cron:
+    name: backup_spool_cron
+    minute: '0'
+    hour: '22'
+    job: /usr/local/bin/run-spool-backup
+    user: ansible

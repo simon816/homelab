@@ -23,3 +23,8 @@
     - deluge
     - sabnzbplus
     - nginx
+    - role: backup-spool
+      vars:
+        backup_paths:
+          sonarr: /home/sinkhole/.config/NzbDrone/
+          deluge: /var/lib/deluged/config/

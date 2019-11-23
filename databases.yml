@@ -28,6 +28,36 @@
     - mariadb
     - mongodb
     - postgres
+    - role: backup-spool
+      vars:
+        backup_scripts:
+          mariadb: |
+            destdir="$basedir/$name"
+            if [[ -d "$destdir" ]]
+            then
+              echo "Skipping mariadb backup"
+              return
+            fi
+            mkdir "$destdir"
+            mysqldump -u root --single-transaction --add-drop-database --all-databases > "$destdir/databases.sql"
+          postgres: |
+            destdir="$basedir/$name"
+            if [[ -d "$destdir" ]]
+            then
+              echo "Skipping postgres backup"
+              return
+            fi
+            mkdir "$destdir"
+            sudo -u postgres pg_dumpall --clean > "$destdir/databases.sql"
+          mongodb: |
+            destdir="$basedir/$name"
+            if [[ -d "$destdir" ]]
+            then
+              echo "Skipping postgres backup"
+              return
+            fi
+            mkdir "$destdir"
+            mongodump --username=root --password=root --out="$destdir"
 
   tasks:
   - name: Ensure nextcloud db
