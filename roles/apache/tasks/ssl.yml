@@ -3,12 +3,16 @@
   copy:
     src: certs/simon816.com.pem
     dest: /etc/ssl/certs/ssl-cert-simon816.pem
+  notify:
+    - restart apache
 
 - name: Ensure SSL private cert
   become: yes
   copy:
     src: certs/simon816.com.key
     dest: /etc/ssl/private/ssl-cert-simon816.key
+  notify:
+    - restart apache
 
 - name: Configure apache SSL
   become: yes
