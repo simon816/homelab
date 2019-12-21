@@ -19,12 +19,16 @@
   copy:
     src: certs/simon816.com.pem
     dest: /etc/ssl/certs/ssl-cert-simon816.pem
+  notify:
+    - restart nginx
 
 - name: Ensure SSL private cert
   become: yes
   copy:
     src: certs/simon816.com.key
     dest: /etc/ssl/private/ssl-cert-simon816.key
+  notify:
+    - restart nginx
 
 - name: nginx dhparams
   become: yes
