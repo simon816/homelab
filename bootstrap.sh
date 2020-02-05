@@ -3,7 +3,7 @@
 
 imgdir=/var/lib/libvirt/images
 
-for disk in controller cloud dbserver gateway sinkhole dev
+for disk in controller cloud dbserver gateway sinkhole dev mail
 do
     file=$imgdir/$disk.qcow2
     if [ ! -e $file ]

@@ -45,6 +45,11 @@
       name: dev
       command: define
       xml: '{{ lookup("template", "vm/dev.xml.j2") }}'
+  - name: Provision mail
+    virt:
+      name: mail
+      command: define
+      xml: '{{ lookup("template", "vm/mail.xml.j2") }}'
   - name: Ensure gateway is running
     virt:
       name: gateway
@@ -64,4 +69,8 @@
   - name: Ensure dev is running
     virt:
       name: dev
+      state: running
+  - name: Ensure mail is running
+    virt:
+      name: mail
       state: running
