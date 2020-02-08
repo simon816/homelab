@@ -1,0 +1,22 @@
+- name: Install packages
+  become: yes
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+    - postfix
+
+- name: Copy postfix configuration
+  become: yes
+  copy:
+    src: main.cf
+    dest: /etc/postfix/main.cf
+  notify:
+    - reload postfix
+
+- name: Enable postfix service
+  become: yes
+  service:
+    name: postfix
+    enabled: yes
+    state: started
