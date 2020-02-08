@@ -38,8 +38,8 @@ virtual_alias_domains = mxgateway.simon816.com
 disable_vrfy_command = yes
 message_size_limit = 52428800
 mailbox_size_limit = 0
-luser_relay = me
-local_recipient_maps =
+mailbox_transport = lmtp:unix:private/dovecot-lmtp
+virtual_alias_maps = hash:/etc/postfix/virtual
 
 smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
 smtp_sasl_auth_enable = yes
@@ -54,15 +54,14 @@ smtp_tls_wrappermode = yes
 smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
 smtp_sasl_tls_security_options = noanonymous
 
-# TODO use these for now
-smtpd_tls_cert_file = /etc/ssl/certs/ssl-cert-snakeoil.pem
-smtpd_tls_key_file = /etc/ssl/private/ssl-cert-snakeoil.key
+smtpd_tls_cert_file = /etc/ssl/certs/ssl-cert-simon816.pem
+smtpd_tls_key_file = /etc/ssl/private/ssl-cert-simon816.key
 smtpd_use_tls = yes
 smtpd_tls_session_cache_database = btree:${data_directory}/smtpd_scache
 smtpd_client_restrictions = permit_tls_all_clientcerts reject
 tls_append_default_CA = no
-smtpd_relay_restrictions = permit_tls_all_clientcerts permit_mynetworks, permit_sasl_authenticated, reject
-smtpd_tls_security_level = encrypt
+smtpd_relay_restrictions = permit_tls_all_clientcerts reject
+smtpd_tls_security_level = secure
 smtpd_tls_auth_only = yes
 smtpd_enforce_tls = yes
 smtpd_tls_loglevel = 2

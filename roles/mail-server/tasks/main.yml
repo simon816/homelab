@@ -5,14 +5,36 @@
   vars:
     packages:
     - postfix
+    - dovecot-imapd
+    - dovecot-lmtpd
+    - dovecot-sieve
 
 - name: Copy postfix configuration
   become: yes
   copy:
-    src: main.cf
-    dest: /etc/postfix/main.cf
+    src: postfix/
+    dest: /etc/postfix/
   notify:
     - reload postfix
+
+- name: Copy dovecot configuration
+  become: yes
+  copy:
+    src: "{{ item }}"
+    dest: /etc/dovecot/conf.d/
+  with_fileglob:
+    - "dovecot/*.conf"
+    - "dovecot/*.conf.ext"
+  notify:
+    - reload dovecot
+
+- name: Copy dovecot users
+  become: yes
+  copy:
+    src: dovecot/users
+    dest: /etc/dovecot/users
+  notify:
+    - reload dovecot
 
 - name: Enable postfix service
   become: yes
@@ -20,3 +42,26 @@
     name: postfix
     enabled: yes
     state: started
+
+- name: Enable dovecot service
+  become: yes
+  service:
+    name: dovecot
+    enabled: yes
+    state: started
+
+- name: Ensure SSL public cert
+  become: yes
+  copy:
+    src: certs/simon816.com.pem
+    dest: /etc/ssl/certs/ssl-cert-simon816.pem
+  notify:
+    - reload dovecot
+
+- name: Ensure SSL private cert
+  become: yes
+  copy:
+    src: certs/simon816.com.key
+    dest: /etc/ssl/private/ssl-cert-simon816.key
+  notify:
+    - reload dovecot

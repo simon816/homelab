@@ -3,3 +3,9 @@
   service:
     name: postfix
     state: reloaded
+
+- name: reload dovecot
+  become: yes
+  service:
+    name: dovecot
+    state: reloaded
