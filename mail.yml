@@ -3,4 +3,11 @@
   roles:
     - intnet-node
     - mail-server
-
+    - role: backup-spool
+      vars:
+        backup_scripts:
+          dovecot: |
+            # need to set permissions for dovecot
+            sudo chmod 777 /var/spool/backup
+            sudo doveadm backup -u simon maildir:/var/spool/backup/dovecot-simon/
+            sudo chmod 700 /var/spool/backup
