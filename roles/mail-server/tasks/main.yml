@@ -8,6 +8,8 @@
     - dovecot-imapd
     - dovecot-lmtpd
     - dovecot-sieve
+    - opendkim
+    - opendkim-tools
 
 - name: Copy postfix configuration
   become: yes
@@ -36,6 +38,29 @@
   notify:
     - reload dovecot
 
+- name: Postfix in DKIM group
+  become: yes
+  user:
+    append: yes
+    name: postfix
+    groups: opendkim
+
+- name: opendkim defaults
+  become: yes
+  copy:
+    src: opendkim/default
+    dest: /etc/default/opendkim
+  notify:
+    - restart opendkim
+
+- name: opendkim configuration
+  become: yes
+  copy:
+    src: opendkim/opendkim.conf
+    dest: /etc/opendkim.conf
+  notify:
+    - restart opendkim
+
 - name: Enable postfix service
   become: yes
   service:
@@ -47,6 +72,13 @@
   become: yes
   service:
     name: dovecot
+    enabled: yes
+    state: started
+
+- name: Enable opendkim service
+  become: yes
+  service:
+    name: opendkim
     enabled: yes
     state: started
 

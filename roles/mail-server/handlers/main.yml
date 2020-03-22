@@ -9,3 +9,9 @@
   service:
     name: dovecot
     state: reloaded
+
+- name: restart opendkim
+  become: yes
+  service:
+    name: opendkim
+    state: restarted

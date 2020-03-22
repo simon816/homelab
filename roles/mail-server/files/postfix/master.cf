@@ -18,7 +18,7 @@ submission inet n       -       y       -       -       smtpd
   -o syslog_name=postfix/submission
   -o smtpd_tls_req_ccert=no
   -o smtpd_tls_ask_ccert=no
-  -o smtpd_tls_security_level=secure
+  -o smtpd_tls_security_level=encrypt
   -o smtpd_sasl_type=dovecot
   -o smtpd_sasl_path=private/auth
   -o smtpd_sasl_auth_enable=yes
