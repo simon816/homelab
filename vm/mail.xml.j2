@@ -3,3 +3,11 @@
 {% set vm_uuid = "bb7f2dd4-ed9f-4f34-9c6e-766275ee255b" %}
 {% set vm_mem = 512 * 1024 %}
 {% set intnet_mac = "52:54:00:24:25:1b" %}
+{% block devices %}
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2'/>
+      <source file='/var/lib/libvirt/images/mail-data.qcow2'/>
+      <target dev='vdb' bus='virtio'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x09' function='0x0'/>
+    </disk>
+{% endblock %}
