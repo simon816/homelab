@@ -1,7 +1,7 @@
 - name: Ensure apt keys
   become: yes
   apt_key:
-    id: "14219A96E15E78F4"
+    id: "3F01618A51312F3F"
     url: https://packages.gitlab.com/gitlab/gitlab-ce/gpgkey
     state: present
 
