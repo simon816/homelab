@@ -10,6 +10,12 @@
     - dovecot-sieve
     - opendkim
     - opendkim-tools
+    - python3-pip
+
+- name: Install sync dependencies
+  become: yes
+  pip:
+    name: imapclient
 
 - name: Copy postfix configuration
   become: yes
@@ -37,6 +43,20 @@
     dest: /etc/dovecot/users
   notify:
     - reload dovecot
+
+- name: Copy dovecot sync code
+  become: yes
+  copy:
+    src: sync
+    dest: /etc/dovecot/
+    mode: preserve
+
+- name: dovecot sync cron
+  become: yes
+  cron:
+    name: dovecot sync
+    minute: "0,30"
+    job: /etc/dovecot/sync/sync-mailboxes
 
 - name: Postfix in DKIM group
   become: yes

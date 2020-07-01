@@ -1,0 +1,117 @@
+#!/usr/bin/env python3
+
+import sys
+
+import doveadm
+from envelope_reader import EnvelopeReader
+
+IGNORE_LOCAL = ('INBOX', 'Junk', 'Sent')
+IGNORE_REMOTE = (*IGNORE_LOCAL, 'Posteo', 'Gateway')
+
+"""
+Future enhancements:
+Detect moves between mailboxes e.g. INBOX -> simon816
+and move one remote only
+
+Skip if mailbox unchanged since last run
+Maybe trigger when mailbox changed rather than cron
+"""
+
+def key(env):
+    return (env.message_id, env.date)
+
+def sync_mailbox(r, mailbox, remote_boxes):
+    if mailbox in IGNORE_LOCAL:
+        return
+
+    print("Doing", mailbox)
+    local = {}
+    remote = {}
+
+    remote_mailbox = 'Posteo.' + mailbox
+    if remote_mailbox not in remote_boxes:
+        doveadm.create_mailbox(remote_mailbox)
+    else:
+        remote_boxes.remove(remote_mailbox)
+
+    for mail in doveadm.fetch('uid imap.envelope', ['mailbox', mailbox, 'not', 'deleted']):
+        env = r.read_envelope(mail['imap.envelope'])
+        local[key(env)] = mail['uid']
+
+    for mail in doveadm.fetch('uid imap.envelope', ['mailbox', remote_mailbox, 'all']):
+        env = r.read_envelope(mail['imap.envelope'])
+        k = key(env)
+        if k in local:
+            del local[k]
+        else:
+            remote[k] = mail['uid']
+
+    if local:
+        # Copy local -> remote
+        search = ['mailbox', mailbox]
+        search.extend(doveadm.search_or(*(['uid', uid] for uid in local.values())))
+        doveadm.copy(remote_mailbox, search)
+
+    if remote:
+        # Delete from remote
+        search = ['mailbox', remote_mailbox]
+        search.extend(doveadm.search_or(*(['uid', uid] for uid in remote.values())))
+        doveadm.delete(search)
+
+def sync_inbox(r):
+    mails = doveadm.fetch('uid imap.envelope', ['mailbox', 'Posteo.INBOX', 'all'])
+
+    delete_list = []
+    move_list = []
+    for mail in mails:
+        uid = mail['uid']
+        env = r.read_envelope(mail['imap.envelope'])
+        # TODO possibly SENTON
+        print("[%s]" % uid.decode('utf8'), "Message", env.message_id)
+        search = doveadm.search(['header', 'Message-ID', env.message_id])
+        if len(list(search)):
+            # If we have the email, delete from remote
+            print("Already got, deleting remote")
+            delete_list.append(uid)
+        else:
+            # Otherwise, we move it from remote to local
+            print("Missing, importing from remote")
+            # Possibly use import instead:
+            # sudo doveadm import -u simon maildir:~/Maildir "Posteo" mailbox "simon816"
+            move_list.append(uid)
+
+    if len(delete_list):
+        search = ['mailbox', 'Posteo.INBOX']
+        search.extend(doveadm.search_or(*(['uid', uid] for uid in delete_list)))
+        doveadm.delete(search)
+
+    if len(move_list):
+        search = ['mailbox', 'Posteo.INBOX']
+        search.extend(doveadm.search_or(*(['uid', uid] for uid in move_list)))
+        doveadm.move('INBOX', search)
+
+def get_remote_boxes():
+    return set(doveadm.get_mailboxes('Posteo.*')) - set('Posteo.' + mb for mb in IGNORE_REMOTE)
+
+def sync_non_inbox(r):
+    remote_boxes = get_remote_boxes()
+
+    for mailbox in doveadm.get_mailboxes():
+        sync_mailbox(r, mailbox, remote_boxes)
+
+    if remote_boxes:
+        doveadm.delete_mailbox(*remote_boxes)
+
+
+if __name__ == '__main__':
+    r = EnvelopeReader()
+    if len(sys.argv) == 2:
+        override = sys.argv[1]
+        if override == 'INBOX':
+            sync_inbox(r)
+        else:
+            sync_mailbox(r, override, get_remote_boxes())
+    else:
+        sync_inbox(r)
+        sync_non_inbox(r)
+
