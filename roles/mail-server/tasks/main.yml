@@ -56,7 +56,7 @@
   cron:
     name: dovecot sync
     minute: "0,30"
-    job: /etc/dovecot/sync/sync-mailboxes
+    job: "/etc/dovecot/sync/sync-mailboxes 2>&1 | logger -t sync-mailboxes"
 
 - name: Postfix in DKIM group
   become: yes
