@@ -1,3 +1,4 @@
+import re
 from subprocess import check_output
 import shlex
 
@@ -11,7 +12,7 @@ def fetch(fields, search):
     for record in result.split(b'\x0c'):
         if not record:
             continue
-        values = record.strip().split(b'\n', nfields)
+        values = re.split(b'(?<!\r)\n', record.strip(), nfields)
         rdict = {}
         for item in values:
             idx = item.index(b':')
@@ -64,6 +65,9 @@ def create_mailbox(name, guid=None):
 
 def delete_mailbox(*names):
     doveadm('mailbox', 'delete', '-u', 'simon', '-s', *names)
+
+def set_flags(flags, search):
+    doveadm('flags', 'replace', '-u', 'simon', flags, *search)
 
 def search_or(*clauses):
     search = ['(']
