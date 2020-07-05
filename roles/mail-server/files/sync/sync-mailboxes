@@ -12,12 +12,92 @@ IGNORE_FLAGS = set(('\\Recent',))
 
 """
 Future enhancements:
-Detect moves between mailboxes e.g. INBOX -> simon816
-and move one remote only
-
 Skip if mailbox unchanged since last run
 Maybe trigger when mailbox changed rather than cron
 """
+
+class ChangeSet:
+
+    def __init__(self):
+        self.mail_actions = defaultdict(list)
+
+    def set_flags(self, key, flags, mailbox, uid):
+        self.mail_actions[key].append(('flags', flags, mailbox, uid))
+
+    def add_delete(self, key, mailbox, uid):
+        self.mail_actions[key].append(('delete', mailbox, uid))
+
+    def add_copy(self, key, src_mailbox, src_uid, dest_mailbox):
+        self.mail_actions[key].append(('copy', src_mailbox, src_uid, dest_mailbox))
+
+    def apply(self):
+        move_targets = defaultdict(lambda: defaultdict(list))
+        flag_targets = defaultdict(lambda: defaultdict(list))
+        copy_targets = defaultdict(lambda: defaultdict(list))
+        delete_targets = defaultdict(list)
+        for k, actions in self.mail_actions.items():
+            actions = self.rewrite_move(actions)
+            for (atype, *args) in actions:
+                if atype == 'flags':
+                    flags, mailbox, uid = args
+                    flag_targets[flags][mailbox].append(uid)
+                elif atype == 'delete':
+                    mailbox, uid = args
+                    delete_targets[mailbox].append(uid)
+                elif atype == 'copy':
+                    src_mb, src_uid, dest_mb = args
+                    copy_targets[dest_mb][src_mb].append(src_uid)
+                elif atype == 'move':
+                    src_mb, src_uid, dest_mb = args
+                    move_targets[dest_mb][src_mb].append(src_uid)
+
+        for flags, searchdict in flag_targets.items():
+            for mailbox, uidlist in searchdict.items():
+                search = create_mb_search(mailbox, uidlist)
+                doveadm.set_flags(' '.join(flags), search)
+
+        for dest_mb, searchdict in copy_targets.items():
+            for mailbox, uidlist in searchdict.items():
+                search = create_mb_search(mailbox, uidlist)
+                doveadm.copy(dest_mb, search)
+
+        for dest_mb, searchdict in move_targets.items():
+            for mailbox, uidlist in searchdict.items():
+                search = create_mb_search(mailbox, uidlist)
+                doveadm.move(dest_mb, search)
+
+        if delete_targets:
+            for mailbox, uidlist in searchdict.items():
+                search = create_mb_search(mailbox, uidlist)
+                doveadm.delete(search)
+
+    def rewrite_move(self, actions):
+        sources = [a[1:] for a in actions if a[0] == 'delete']
+        if not sources:
+            return actions
+        copies = [a[1:] for a in actions if a[0] == 'copy']
+        if not copies:
+            return actions
+
+        source = sources.pop(0)
+        first_copy = copies.pop(0)
+
+        # keep unrelated actions
+        new_actions = [a for a in actions if a[0] not in ('delete', 'copy')]
+        # If we have more than one copy, do those with the remove src first
+        for cp in copies:
+            new_actions.append(('copy', source[0], source[1], cp[2]))
+        # transform the first copy into a move
+        new_actions.append(('move', source[0], source[1], first_copy[2]))
+        # If we have more than one delete, do the rest too
+        for d in sources:
+            new_actions.append(('delete', *d))
+        return new_actions
+
+def create_mb_search(mailbox, uidlist):
+    search = ['mailbox', mailbox]
+    search.extend(doveadm.search_or(*(['uid', uid] for uid in uidlist)))
+    return search
 
 def key(env):
     return (env.message_id, env.date)
@@ -27,14 +107,12 @@ def flag_set(flags):
         return frozenset()
     return frozenset(set(flags.decode('utf8').split(' ')) - IGNORE_FLAGS)
 
-def sync_mailbox(r, mailbox, remote_boxes):
+def sync_mailbox(r, changeset, mailbox, remote_boxes):
     if mailbox in IGNORE_LOCAL:
         return
 
     print("Doing", mailbox)
     local = {}
-    remote = {}
-    update_flags = defaultdict(list)
 
     remote_mailbox = 'Posteo.' + mailbox
     if remote_mailbox not in remote_boxes:
@@ -52,29 +130,15 @@ def sync_mailbox(r, mailbox, remote_boxes):
         if k in local:
             l_mail = local[k]
             if l_mail['flags'] != flag_set(mail['flags']):
-                update_flags[l_mail['flags']].append(mail['uid'])
+                changeset.set_flags(k, l_mail['flags'], remote_mailbox, mail['uid'])
             del local[k]
         else:
-            remote[k] = mail['uid']
+            # Delete from remote
+            changeset.add_delete(k, remote_mailbox, mail['uid'])
 
-    if local:
-        # Copy local -> remote
-        search = ['mailbox', mailbox]
-        search.extend(doveadm.search_or(*(['uid', mail['uid']] for mail in local.values())))
-        doveadm.copy(remote_mailbox, search)
-
-    if remote:
-        # Delete from remote
-        search = ['mailbox', remote_mailbox]
-        search.extend(doveadm.search_or(*(['uid', uid] for uid in remote.values())))
-        doveadm.delete(search)
-
-    if update_flags:
-        # For efficiency, we group uids wanting the same flags into a single update
-        for flags, uids in update_flags.items():
-            search = ['mailbox', remote_mailbox]
-            search.extend(doveadm.search_or(*(['uid', uid] for uid in uids)))
-            doveadm.set_flags(' '.join(flags), search)
+    # Copy local -> remote
+    for k, mail in local.items():
+        changeset.add_copy(k, mailbox, mail['uid'], remote_mailbox)
 
 def sync_inbox(r):
     mails = doveadm.fetch('uid imap.envelope', ['mailbox', 'Posteo.INBOX', 'all'])
@@ -111,11 +175,13 @@ def sync_inbox(r):
 def get_remote_boxes():
     return set(doveadm.get_mailboxes('Posteo.*')) - set('Posteo.' + mb for mb in IGNORE_REMOTE)
 
-def sync_non_inbox(r):
+def sync_non_inbox(r, changeset):
     remote_boxes = get_remote_boxes()
 
     for mailbox in doveadm.get_mailboxes():
-        sync_mailbox(r, mailbox, remote_boxes)
+        sync_mailbox(r, changeset, mailbox, remote_boxes)
+
+    changeset.apply()
 
     if remote_boxes:
         doveadm.delete_mailbox(*remote_boxes)
@@ -123,13 +189,15 @@ def sync_non_inbox(r):
 
 if __name__ == '__main__':
     r = EnvelopeReader()
-    if len(sys.argv) == 2:
-        override = sys.argv[1]
-        if override == 'INBOX':
-            sync_inbox(r)
-        else:
-            sync_mailbox(r, override, get_remote_boxes())
+    changeset = ChangeSet()
+    if len(sys.argv) > 1:
+        for mailbox in sys.argv[1:]:
+            if mailbox == 'INBOX':
+                sync_inbox(r)
+            else:
+                sync_mailbox(r, changeset, mailbox, get_remote_boxes())
+        changeset.apply()
     else:
         sync_inbox(r)
-        sync_non_inbox(r)
+        sync_non_inbox(r, changeset)
 
