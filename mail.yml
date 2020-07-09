@@ -22,6 +22,16 @@
       path: /home
       state: mounted
 
+  tasks:
+  - name: Backup directory
+    become: yes
+    file:
+      path: /home/dovecot-backup
+      state: directory
+      owner: simon
+      group: simon
+      mode: 0700
+
   roles:
     - intnet-node
     - mail-server
@@ -29,7 +39,4 @@
       vars:
         backup_scripts:
           dovecot: |
-            # need to set permissions for dovecot
-            sudo chmod 777 /var/spool/backup
-            sudo doveadm backup -u simon maildir:/var/spool/backup/dovecot-simon/
-            sudo chmod 700 /var/spool/backup
+            sudo doveadm backup -u simon maildir:/home/dovecot-backup
