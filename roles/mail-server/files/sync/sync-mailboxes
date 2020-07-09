@@ -9,6 +9,7 @@ from envelope_reader import EnvelopeReader
 IGNORE_LOCAL = ('INBOX', 'Junk', 'Sent')
 IGNORE_REMOTE = (*IGNORE_LOCAL, 'Posteo', 'Gateway')
 IGNORE_FLAGS = set(('\\Recent',))
+BATCH_SIZE = 1000
 
 """
 Future enhancements:
@@ -52,23 +53,19 @@ class ChangeSet:
                     move_targets[dest_mb][src_mb].append(src_uid)
 
         for flags, searchdict in flag_targets.items():
-            for mailbox, uidlist in searchdict.items():
-                search = create_mb_search(mailbox, uidlist)
+            for search in chunked_search(searchdict):
                 doveadm.set_flags(' '.join(flags), search)
 
         for dest_mb, searchdict in copy_targets.items():
-            for mailbox, uidlist in searchdict.items():
-                search = create_mb_search(mailbox, uidlist)
+            for search in chunked_search(searchdict):
                 doveadm.copy(dest_mb, search)
 
         for dest_mb, searchdict in move_targets.items():
-            for mailbox, uidlist in searchdict.items():
-                search = create_mb_search(mailbox, uidlist)
+            for search in chunked_search(searchdict):
                 doveadm.move(dest_mb, search)
 
         if delete_targets:
-            for mailbox, uidlist in searchdict.items():
-                search = create_mb_search(mailbox, uidlist)
+            for search in chunked_search(delete_targets):
                 doveadm.delete(search)
 
     def rewrite_move(self, actions):
@@ -98,6 +95,12 @@ def create_mb_search(mailbox, uidlist):
     search = ['mailbox', mailbox]
     search.extend(doveadm.search_or(*(['uid', uid] for uid in uidlist)))
     return search
+
+def chunked_search(searchdict):
+    for mailbox, uidlist in searchdict.items():
+        for i in range(0,  len(uidlist), BATCH_SIZE):
+            search = create_mb_search(mailbox, uidlist[i:i + BATCH_SIZE])
+            yield search
 
 def key(env):
     return (env.message_id, env.date)
@@ -173,7 +176,9 @@ def sync_inbox(r):
         doveadm.move('INBOX', search)
 
 def get_remote_boxes():
-    return set(doveadm.get_mailboxes('Posteo.*')) - set('Posteo.' + mb for mb in IGNORE_REMOTE)
+    # Use status since mailbox list also returns intermediate namespaces
+    mboxes = doveadm.status('uidnext', 'Posteo.*')
+    return set(mboxes.keys()) - set('Posteo.' + mb for mb in IGNORE_REMOTE)
 
 def sync_non_inbox(r, changeset):
     remote_boxes = get_remote_boxes()
