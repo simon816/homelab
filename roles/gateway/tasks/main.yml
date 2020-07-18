@@ -63,6 +63,17 @@
   notify:
     - save iptables
 
+- name: Drop bad traffic
+  become: yes
+  iptables:
+    table: filter
+    chain: FORWARD
+    out_interface: ens9
+    source: 10.80.0.0/24
+    jump: DROP
+  notify:
+    - save iptables
+
 - name: iptables DNS # See https://stackoverflow.com/questions/12945233/iptables-forward-and-input
   become: yes
   iptables:
