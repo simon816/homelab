@@ -27,6 +27,7 @@ submission inet n       -       y       -       -       smtpd
   -o smtpd_sender_restrictions=reject_sender_login_mismatch
   -o smtpd_recipient_restrictions=reject_non_fqdn_recipient,reject_unknown_recipient_domain,permit_sasl_authenticated,reject
   -o smtpd_relay_restrictions=permit_sasl_authenticated,reject
+  -o header_checks=regexp:/etc/postfix/header_checks
 #smtps     inet  n       -       y       -       -       smtpd
 #  -o syslog_name=postfix/smtps
 #  -o smtpd_tls_wrappermode=yes

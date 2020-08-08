@@ -1,0 +1,3 @@
+/^User-Agent:/ IGNORE
+/^X-Mailer:/ IGNORE
+/^X-Originating-IP:/ IGNORE
