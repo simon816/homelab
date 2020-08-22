@@ -2,6 +2,10 @@
 
 from collections import defaultdict
 import sys
+import os
+import pickle
+import zlib
+from hashlib import md5
 
 import doveadm
 from envelope_reader import EnvelopeReader
@@ -10,6 +14,7 @@ IGNORE_LOCAL = ('INBOX', 'Junk', 'Sent')
 IGNORE_REMOTE = (*IGNORE_LOCAL, 'Posteo', 'Gateway')
 IGNORE_FLAGS = set(('\\Recent',))
 BATCH_SIZE = 1000
+CACHE_PATH = '/etc/dovecot/sync/env_cache'
 
 """
 Future enhancements:
@@ -105,10 +110,36 @@ def chunked_search(searchdict):
 def key(env):
     return (env.message_id, env.date)
 
+def cached_key(c, r, env_data):
+    uniq_key, cache_key = c.get(env_data)
+    if uniq_key is None:
+        env = r.read_envelope(env_data)
+        uniq_key = key(env)
+        c[cache_key] = uniq_key
+    return uniq_key
+
 def flag_set(flags):
     if not flags:
         return frozenset()
     return frozenset(set(flags.decode('utf8').split(' ')) - IGNORE_FLAGS)
+
+class EnvelopeCache:
+
+    def __init__(self):
+        self.layer1 = {}
+
+    def get(self, env):
+        h1 = zlib.adler32(env)
+        h2 = md5(env).digest()
+        if h1 in self.layer1:
+            return self.layer1[h1].get(h2), (h1, h2)
+        return None, (h1, h2)
+
+    def __setitem__(self, key, val):
+        h1, h2 = key
+        if h1 not in self.layer1:
+            self.layer1[h1] = {}
+        self.layer1[h1][h2] = val
 
 def sync_mailbox(r, changeset, mailbox, remote_boxes):
     if mailbox in IGNORE_LOCAL:
@@ -124,12 +155,10 @@ def sync_mailbox(r, changeset, mailbox, remote_boxes):
         remote_boxes.remove(remote_mailbox)
 
     for mail in doveadm.fetch('uid imap.envelope flags', ['mailbox', mailbox, 'not', 'deleted']):
-        env = r.read_envelope(mail['imap.envelope'])
-        local[key(env)] = { 'uid': mail['uid'], 'flags': flag_set(mail['flags']) }
+        local[cached_key(c, r, mail['imap.envelope'])] = { 'uid': mail['uid'], 'flags': flag_set(mail['flags']) }
 
     for mail in doveadm.fetch('uid imap.envelope flags', ['mailbox', remote_mailbox, 'all']):
-        env = r.read_envelope(mail['imap.envelope'])
-        k = key(env)
+        k = cached_key(c, r, mail['imap.envelope'])
         if k in local:
             l_mail = local[k]
             if l_mail['flags'] != flag_set(mail['flags']):
@@ -193,6 +222,14 @@ def sync_non_inbox(r, changeset):
 
 
 if __name__ == '__main__':
+    if os.path.exists(CACHE_PATH):
+        try:
+            with open(CACHE_PATH, 'rb') as f:
+                c = pickle.load(f)
+        except:
+            c = EnvelopeCache()
+    else:
+        c = EnvelopeCache()
     r = EnvelopeReader()
     changeset = ChangeSet()
     if len(sys.argv) > 1:
@@ -206,3 +243,5 @@ if __name__ == '__main__':
         sync_inbox(r)
         sync_non_inbox(r, changeset)
 
+    with open(CACHE_PATH, 'wb') as f:
+        pickle.dump(c, f)

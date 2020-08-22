@@ -24,4 +24,3 @@ class EnvelopeReader(imaplib.IMAP4):
         typ, data = self._untagged_response(typ, data, 'FETCH')
         resp = parse_fetch_response(data, normalise_times, True)
         return resp[int(msg_id)][b'ENVELOPE']
-
