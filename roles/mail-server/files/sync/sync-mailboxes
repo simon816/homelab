@@ -204,6 +204,24 @@ def sync_inbox(r):
         search.extend(doveadm.search_or(*(['uid', uid] for uid in move_list)))
         doveadm.move('INBOX', search)
 
+    # Look for mails we imported because they were missing, that later became duplicates
+    mails = doveadm.fetch('uid imap.envelope', ['mailbox', 'INBOX', 'header', 'Delivered-To', 'simon816@posteo.net'])
+    delete_list = []
+
+    for mail in mails:
+        uid = mail['uid']
+        env = r.read_envelope(mail['imap.envelope'])
+        search = doveadm.search(['header', 'Message-ID', env.message_id, 'not', 'mailbox', 'INBOX'])
+        if len(list(search)):
+            print("[%s] %s already exists, removing from inbox" % (uid, env.message_id))
+            # Another email exists this this message ID, delete from local
+            delete_list.append(uid)
+
+    if len(delete_list):
+        search = ['mailbox', 'INBOX']
+        search.extend(doveadm.search_or(*(['uid', uid] for uid in delete_list)))
+        doveadm.delete(search)
+
 def get_remote_boxes():
     # Use status since mailbox list also returns intermediate namespaces
     mboxes = doveadm.status('uidnext', 'Posteo.*')
