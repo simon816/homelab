@@ -15,6 +15,8 @@
     - php-imagick
     - php-xml
     - php-zip
+    - php-bcmath
+    - php-gmp
 
 - name: PHP configuration
   become: yes
