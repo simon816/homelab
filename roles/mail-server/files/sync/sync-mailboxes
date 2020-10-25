@@ -11,7 +11,7 @@ import doveadm
 from envelope_reader import EnvelopeReader
 
 IGNORE_LOCAL = ('INBOX', 'Junk', 'Sent')
-IGNORE_REMOTE = (*IGNORE_LOCAL, 'Posteo', 'Gateway')
+IGNORE_REMOTE = (*IGNORE_LOCAL, 'Posteo', 'Gateway', 'Personal')
 IGNORE_FLAGS = set(('\\Recent',))
 BATCH_SIZE = 1000
 CACHE_PATH = '/etc/dovecot/sync/env_cache'
