@@ -1,0 +1,6 @@
+- name: restart ttrss
+  become: yes
+  systemd:
+    daemon_reload: yes
+    name: ttrss_backend
+    state: restarted

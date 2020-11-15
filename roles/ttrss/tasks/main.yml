@@ -22,15 +22,16 @@
     dest: /var/www/ttrss
   notify:
     - restart apache
+    - restart ttrss
 
 - name: ttrss config
   become: yes
   become_user: www-data
   template:
-    src: config.php.tpl
+    src: config.php.j2
     dest: /var/www/ttrss/config.php
   notify:
-    - restart apache
+    - restart ttrss
 
 - name: Configure ttrss apache
   become: yes
@@ -47,3 +48,18 @@
     creates: /etc/apache2/sites-enabled/ttrss.conf
   notify:
     - restart apache
+
+- name: Configure ttrss service
+  become: yes
+  copy:
+    src: ttrss_backend.service
+    dest: /etc/systemd/system/ttrss_backend.service
+  notify:
+    - restart ttrss
+
+- name: Enable ttrss service
+  become: yes
+  service:
+    name: ttrss_backend
+    enabled: yes
+    state: started

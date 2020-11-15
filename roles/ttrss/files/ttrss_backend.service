@@ -1,0 +1,10 @@
+[Unit]
+Description=ttrss_backend
+After=network.target
+
+[Service]
+User=www-data
+ExecStart=/var/www/ttrss/update_daemon2.php
+
+[Install]
+WantedBy=multi-user.target
