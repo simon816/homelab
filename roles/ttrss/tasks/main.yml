@@ -23,6 +23,15 @@
   notify:
     - restart apache
 
+- name: ttrss config
+  become: yes
+  become_user: www-data
+  template:
+    src: config.php.tpl
+    dest: /var/www/ttrss/config.php
+  notify:
+    - restart apache
+
 - name: Configure ttrss apache
   become: yes
   copy:
