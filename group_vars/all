@@ -37,3 +37,9 @@ db:
     port: 5432
     user: pleroma
     pass: pleroma
+  ttrss:
+    name: ttrss
+    host: 10.80.0.5
+    port: 3306
+    user: ttrss
+    pass: ttrss

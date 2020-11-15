@@ -14,6 +14,7 @@
     - xbrowsersync
     - wekan
     - pleroma
+    - ttrss
     - role: backup-spool
       vars:
         backup_paths:

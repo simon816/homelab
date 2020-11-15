@@ -1,0 +1,40 @@
+- name: Install ttrss dependencies
+  become: yes
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+    - git
+
+- name: Ensure ttrss dir
+  become: yes
+  file:
+    name: /var/www/ttrss
+    state: directory
+    owner: www-data
+    group: www-data
+
+- name: Ensure ttrss files
+  become: yes
+  become_user: www-data
+  git:
+    repo: "https://git.tt-rss.org/fox/tt-rss.git"
+    dest: /var/www/ttrss
+  notify:
+    - restart apache
+
+- name: Configure ttrss apache
+  become: yes
+  copy:
+    src: ttrss.conf
+    dest: /etc/apache2/sites-available/ttrss.conf
+  notify:
+    - restart apache
+
+- name: Enable ttrss apache site
+  become: yes
+  command: a2ensite ttrss
+  args:
+    creates: /etc/apache2/sites-enabled/ttrss.conf
+  notify:
+    - restart apache

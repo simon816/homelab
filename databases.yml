@@ -160,3 +160,23 @@
       login_unix_socket: /var/run/postgresql/
       name: "{{ db.pleroma.name }}"
       password: "{{ db.pleroma.pass }}"
+
+  - name: Ensure ttrss db
+    become: yes
+    mysql_db:
+      login_unix_socket: /var/run/mysqld/mysqld.sock
+      name: "{{ db.ttrss.name }}"
+      collation: utf8mb4_general_ci
+      encoding: utf8mb4
+      state: present
+
+  - name: Ensure ttrss user
+    become: yes
+    mysql_user:
+      login_unix_socket: /var/run/mysqld/mysqld.sock
+      name: "{{ db.ttrss.user }}"
+      password: "{{ db.ttrss.pass }}"
+      priv: "{{ db.ttrss.name }}.*:ALL"
+      host: 10.80.0.4
+      state: present
+
