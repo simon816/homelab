@@ -24,6 +24,13 @@
     - restart apache
     - restart ttrss
 
+- name: Ensure ttrss data_migration plugin
+  become: yes
+  become_user: www-data
+  git:
+    repo: "https://git.tt-rss.org/fox/ttrss-data-migration.git"
+    dest: /var/www/ttrss/plugins.local/data_migration
+
 - name: ttrss config
   become: yes
   become_user: www-data
