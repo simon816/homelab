@@ -11,6 +11,7 @@ import doveadm
 from envelope_reader import EnvelopeReader
 
 IGNORE_LOCAL = ('INBOX', 'Junk', 'Sent')
+IGNORE_WILDCARD = ('Archive',)
 IGNORE_REMOTE = (*IGNORE_LOCAL, 'Posteo', 'Gateway', 'Personal')
 IGNORE_FLAGS = set(('\\Recent',))
 BATCH_SIZE = 1000
@@ -142,7 +143,7 @@ class EnvelopeCache:
         self.layer1[h1][h2] = val
 
 def sync_mailbox(r, changeset, mailbox, remote_boxes):
-    if mailbox in IGNORE_LOCAL:
+    if mailbox in IGNORE_LOCAL or any(mailbox.startswith(s) for s in IGNORE_WILDCARD):
         return
 
     print("Doing", mailbox)
