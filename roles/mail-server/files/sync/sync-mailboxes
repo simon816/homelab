@@ -212,7 +212,7 @@ def sync_inbox(r):
     for mail in mails:
         uid = mail['uid']
         env = r.read_envelope(mail['imap.envelope'])
-        search = doveadm.search(['header', 'Message-ID', env.message_id, 'not', 'mailbox', 'INBOX'])
+        search = doveadm.search(['header', 'Message-ID', env.message_id, 'not', 'header', 'Delivered-To', 'simon816@posteo.net'])
         if len(list(search)):
             print("[%s] %s already exists, removing from inbox" % (uid, env.message_id))
             # Another email exists this this message ID, delete from local
