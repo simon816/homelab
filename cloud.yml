@@ -11,7 +11,7 @@
     - intnet-node
     - apache
     - nextcloud
-    - xbrowsersync
+#    - xbrowsersync
     - wekan
     - pleroma
     - ttrss
