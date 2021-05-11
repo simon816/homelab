@@ -1,0 +1,18 @@
+[Unit]
+Description=Radarr Daemon
+After=network.target
+
+[Service]
+ExecStart=/opt/Radarr/Radarr -nobrowser
+User=sinkhole
+Group=sinkhole
+Restart=on-failure
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=radarr
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target
+

@@ -1,0 +1,45 @@
+- name: Install packages
+  become: yes
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+      - curl
+      - mediainfo
+      - sqlite3
+
+- name: Get is radarr installed
+  stat:
+    path: /opt/Radarr
+  register: radarr_dir_stat
+
+- name: Download radarr
+  get_url:
+    url: "https://radarr.servarr.com/v1/update/master/updatefile?os=linux&runtime=netcore&arch=x64"
+    dest: /tmp/
+  when: not radarr_dir_stat.stat.exists
+  register: radarr_tar
+
+- name: Install radarr
+  become: yes
+  unarchive:
+    src: "{{ radarr_tar.dest }}"
+    remote_src: yes
+    creates: /opt/Radarr
+    dest: /opt/
+  when: radarr_tar is not skipped
+
+- name: Configure radarr service
+  become: yes
+  template:
+    src: radarr.service.j2
+    dest: /etc/systemd/system/radarr.service
+  notify:
+    - restart radarr service
+
+- name: Enable radarr service
+  become: yes
+  service:
+    name: radarr
+    enabled: yes
+    state: started

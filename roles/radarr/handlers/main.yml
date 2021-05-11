@@ -1,6 +1,7 @@
-- name: restart sonarr service
+- name: restart radarr service
   become: yes
   systemd:
     daemon_reload: yes
-    name: sonarr
+    name: radarr
     state: restarted
+

@@ -19,6 +19,7 @@
   roles:
     - intnet-node
     - sonarr
+    - radarr
     - jackett
     - deluge
     - sabnzbplus
@@ -28,3 +29,4 @@
         backup_paths:
           sonarr: /home/sinkhole/.config/NzbDrone/
           deluge: /var/lib/deluged/config/
+          radarr: /home/sinkhole/.config/Radarr/
