@@ -25,7 +25,7 @@ ansible_python_interpreter=/usr/bin/python3
 [mail]
 10.80.0.8
 
-[lab-servers]
+[lab_servers]
 10.80.0.2
 10.80.0.4
 10.80.0.5

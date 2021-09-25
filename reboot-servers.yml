@@ -1,5 +1,5 @@
 ---
-- hosts: lab-servers
+- hosts: lab_servers
   tasks:
     - name: Reboot all
       become: yes
