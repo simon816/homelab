@@ -27,6 +27,6 @@
     - role: backup-spool
       vars:
         backup_paths:
-          sonarr: /home/sinkhole/.config/NzbDrone/
+          sonarr: /home/sinkhole/.config/Sonarr/
           deluge: /var/lib/deluged/config/
           radarr: /home/sinkhole/.config/Radarr/

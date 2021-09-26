@@ -3,7 +3,7 @@ Description=Sonarr Daemon
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/env mono /opt/NzbDrone/NzbDrone.exe -nobrowser
+ExecStart=/usr/bin/env mono /usr/lib/sonarr/bin/Sonarr.exe -nobrowser
 User=sinkhole
 Group=sinkhole
 Restart=on-failure

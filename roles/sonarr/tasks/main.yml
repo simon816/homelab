@@ -2,12 +2,12 @@
   become: yes
   apt_key:
     keyserver: keyserver.ubuntu.com
-    id: "0xA236C58F409091A18ACA53CBEBFF6B99D9B78493"
+    id: "2009837CBFFD68F45BC180471F4F90DE2A9B4BF8"
 
 - name: Ensure apt repositories
   become: yes
   apt_repository:
-    repo: "deb https://apt.sonarr.tv/ master main"
+    repo: "deb https://apt.sonarr.tv/ubuntu bionic main"
 
 - name: Install packages
   become: yes
@@ -15,7 +15,7 @@
     name: "{{ packages }}"
   vars:
     packages:
-      - nzbdrone
+      - sonarr
 
 - name: Configure sonarr service
   become: yes
