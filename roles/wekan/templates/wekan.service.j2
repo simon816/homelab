@@ -11,6 +11,7 @@ Wants=systemd-networkd-wait-online.service
 
 [Service]
 ExecStart=/usr/bin/env node /var/www/wekan/main.js
+WorkingDirectory=/var/www/wekan
 Restart=on-failure
 StartLimitInterval=86400
 StartLimitBurst=5
