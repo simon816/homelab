@@ -10,6 +10,7 @@ from hashlib import md5
 import doveadm
 from envelope_reader import EnvelopeReader
 
+REMOTE_PREFIX = 'Remote'
 IGNORE_LOCAL = ('INBOX', 'Junk', 'Sent')
 IGNORE_WILDCARD = ('Archive',)
 IGNORE_REMOTE = (*IGNORE_LOCAL, 'Posteo', 'Gateway', 'Personal')
@@ -149,7 +150,7 @@ def sync_mailbox(r, changeset, mailbox, remote_boxes):
     print("Doing", mailbox)
     local = {}
 
-    remote_mailbox = 'Posteo.' + mailbox
+    remote_mailbox = REMOTE_PREFIX + '.' + mailbox
     if remote_mailbox not in remote_boxes:
         doveadm.create_mailbox(remote_mailbox)
     else:
@@ -174,7 +175,7 @@ def sync_mailbox(r, changeset, mailbox, remote_boxes):
         changeset.add_copy(k, mailbox, mail['uid'], remote_mailbox)
 
 def sync_inbox(r):
-    mails = doveadm.fetch('uid imap.envelope', ['mailbox', 'Posteo.INBOX', 'all'])
+    mails = doveadm.fetch('uid imap.envelope', ['mailbox', REMOTE_PREFIX + '.INBOX', 'all'])
 
     delete_list = []
     move_list = []
@@ -196,12 +197,12 @@ def sync_inbox(r):
             move_list.append(uid)
 
     if len(delete_list):
-        search = ['mailbox', 'Posteo.INBOX']
+        search = ['mailbox', REMOTE_PREFIX + '.INBOX']
         search.extend(doveadm.search_or(*(['uid', uid] for uid in delete_list)))
         doveadm.delete(search)
 
     if len(move_list):
-        search = ['mailbox', 'Posteo.INBOX']
+        search = ['mailbox', REMOTE_PREFIX + '.INBOX']
         search.extend(doveadm.search_or(*(['uid', uid] for uid in move_list)))
         doveadm.move('INBOX', search)
 
@@ -225,8 +226,8 @@ def sync_inbox(r):
 
 def get_remote_boxes():
     # Use status since mailbox list also returns intermediate namespaces
-    mboxes = doveadm.status('uidnext', 'Posteo.*')
-    return set(mboxes.keys()) - set('Posteo.' + mb for mb in IGNORE_REMOTE)
+    mboxes = doveadm.status('uidnext', REMOTE_PREFIX + '.*')
+    return set(mboxes.keys()) - set(REMOTE_PREFIX + '.' + mb for mb in IGNORE_REMOTE)
 
 def sync_non_inbox(r, changeset):
     remote_boxes = get_remote_boxes()
