@@ -10,11 +10,24 @@ from hashlib import md5
 import doveadm
 from envelope_reader import EnvelopeReader
 
+# Mailbox prefix that the remote is mapped to
 REMOTE_PREFIX = 'Remote'
-IGNORE_LOCAL = ('INBOX', 'Junk', 'Sent')
+# mailbox on the remote for incoming remote mail
+INCOMING_REMOTE = 'Incoming'
+# local mailbox for missed incoming remote mail
+INCOMING_IMPORT = 'INBOX'
+# Mailbox for a copy of recent mail
+REMOTE_RECENT = 'Incoming.Recent'
+# Filter to identify emails delivered to remote
+REMOTE_DELIVERED = ('header', 'Delivered-To', 'simon816@posteo.net')
+# Do not sync these mailboxes to remote
+IGNORE_LOCAL = ('Junk',)
 IGNORE_WILDCARD = ('Archive',)
-IGNORE_REMOTE = (*IGNORE_LOCAL, 'Posteo', 'Gateway', 'Personal')
+# Do not delete these remote mailboxes
+IGNORE_REMOTE = (*IGNORE_LOCAL, INCOMING_REMOTE, REMOTE_RECENT)
+# Ignore changes to these flags
 IGNORE_FLAGS = set(('\\Recent',))
+# Apply changes to this many mails at a time
 BATCH_SIZE = 1000
 CACHE_PATH = '/etc/dovecot/sync/env_cache'
 
@@ -147,7 +160,7 @@ def sync_mailbox(r, changeset, mailbox, remote_boxes):
     if mailbox in IGNORE_LOCAL or any(mailbox.startswith(s) for s in IGNORE_WILDCARD):
         return
 
-    print("Doing", mailbox)
+    print("Doing", mailbox, flush=True)
     local = {}
 
     remote_mailbox = REMOTE_PREFIX + '.' + mailbox
@@ -174,14 +187,17 @@ def sync_mailbox(r, changeset, mailbox, remote_boxes):
     for k, mail in local.items():
         changeset.add_copy(k, mailbox, mail['uid'], remote_mailbox)
 
-def sync_inbox(r):
-    mails = doveadm.fetch('uid imap.envelope', ['mailbox', REMOTE_PREFIX + '.INBOX', 'all'])
+def sync_incoming(r):
+    mails = doveadm.fetch('uid imap.envelope', ['mailbox', REMOTE_PREFIX + '.' + INCOMING_REMOTE, 'all'])
 
     delete_list = []
     move_list = []
     for mail in mails:
         uid = mail['uid']
         env = r.read_envelope(mail['imap.envelope'])
+        if env.message_id is None:
+            print("Unable to get Message-ID:", mail['imap.envelope'])
+            continue
         # TODO possibly SENTON
         print("[%s]" % uid.decode('utf8'), "Message", env.message_id)
         search = doveadm.search(['header', 'Message-ID', env.message_id])
@@ -197,39 +213,43 @@ def sync_inbox(r):
             move_list.append(uid)
 
     if len(delete_list):
-        search = ['mailbox', REMOTE_PREFIX + '.INBOX']
+        search = ['mailbox', REMOTE_PREFIX + '.' + INCOMING_REMOTE]
         search.extend(doveadm.search_or(*(['uid', uid] for uid in delete_list)))
         doveadm.delete(search)
 
     if len(move_list):
-        search = ['mailbox', REMOTE_PREFIX + '.INBOX']
+        search = ['mailbox', REMOTE_PREFIX + '.' + INCOMING_REMOTE]
         search.extend(doveadm.search_or(*(['uid', uid] for uid in move_list)))
-        doveadm.move('INBOX', search)
+        doveadm.move(INCOMING_IMPORT, search)
 
     # Look for mails we imported because they were missing, that later became duplicates
-    mails = doveadm.fetch('uid imap.envelope', ['mailbox', 'INBOX', 'header', 'Delivered-To', 'simon816@posteo.net'])
+    mails = doveadm.fetch('uid imap.envelope', ['mailbox', INCOMING_IMPORT, *REMOTE_DELIVERED])
     delete_list = []
 
     for mail in mails:
         uid = mail['uid']
         env = r.read_envelope(mail['imap.envelope'])
-        search = doveadm.search(['header', 'Message-ID', env.message_id, 'not', 'header', 'Delivered-To', 'simon816@posteo.net'])
+        search = doveadm.search(['header', 'Message-ID', env.message_id, 'not', *REMOTE_DELIVERED])
         if len(list(search)):
             print("[%s] %s already exists, removing from inbox" % (uid, env.message_id))
-            # Another email exists this this message ID, delete from local
+            # Another email exists with this message ID, delete from local
             delete_list.append(uid)
 
     if len(delete_list):
-        search = ['mailbox', 'INBOX']
+        search = ['mailbox', INCOMING_IMPORT]
         search.extend(doveadm.search_or(*(['uid', uid] for uid in delete_list)))
         doveadm.delete(search)
+
+def prune_recent():
+    print("Pruning recent mail mailbox")
+    doveadm.delete(['mailbox', REMOTE_PREFIX + '.' + REMOTE_RECENT, 'BEFORE', '30d'])
 
 def get_remote_boxes():
     # Use status since mailbox list also returns intermediate namespaces
     mboxes = doveadm.status('uidnext', REMOTE_PREFIX + '.*')
     return set(mboxes.keys()) - set(REMOTE_PREFIX + '.' + mb for mb in IGNORE_REMOTE)
 
-def sync_non_inbox(r, changeset):
+def sync_all_mailboxes(r, changeset):
     remote_boxes = get_remote_boxes()
 
     for mailbox in doveadm.get_mailboxes():
@@ -254,14 +274,15 @@ if __name__ == '__main__':
     changeset = ChangeSet()
     if len(sys.argv) > 1:
         for mailbox in sys.argv[1:]:
-            if mailbox == 'INBOX':
-                sync_inbox(r)
+            if mailbox == INCOMING_REMOTE:
+                sync_incoming(r)
             else:
                 sync_mailbox(r, changeset, mailbox, get_remote_boxes())
         changeset.apply()
     else:
-        sync_inbox(r)
-        sync_non_inbox(r, changeset)
+        sync_incoming(r)
+        sync_all_mailboxes(r, changeset)
+        prune_recent()
 
     with open(CACHE_PATH, 'wb') as f:
         pickle.dump(c, f)
