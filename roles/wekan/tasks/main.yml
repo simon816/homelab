@@ -53,6 +53,7 @@
   npm:
     path: /var/www/wekan/programs/server
     global: yes
+    production: yes
 
 - name: Configure wekan service
   become: yes

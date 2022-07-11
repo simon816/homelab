@@ -29,6 +29,7 @@
     NPM_CONFIG_CACHE: /tmp/npmcache
   npm:
     path: /var/www/xbrowsersync
+    production: yes
 
 - name: xbrowsersync config
   become: yes
