@@ -1,0 +1,31 @@
+#cloud-config
+
+users:
+  - name: ansible
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDey0lk/UKZGEawxDbMr7xWW5OGfnjNx6sNUDuewWT95v0gUi3qzhQ/8URJLJ+aegXgi7jqKdKlO8pnn3AbuRy4DooPQRjH3UonIOZEsUBFisSYW13lvP21pb3hD3plgWxcM78zqglJaf8vvQShRAcWQ1UJY0L1P58bFjVV9XPVqtjc0pQAHbGCE505bc4pb4xF8cUjrQRNoOxc5glXp4/Sg+U9IWRsLXzmv7r5t4W6vxfEvS2o9DtayNAXHpJDAvWFajaCzR4bVYpo4oPoEnYojCaVmp1ZIjNpP60BJbLeqsR0QJ11cBXxYY42Rq+FHqgiqU+74XMlISFoJayuK9XT ansible@ansible
+  # Ansible user doesn't have a password
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
+    shell: /bin/bash
+
+runcmd:
+  - 'apt-get update'
+  - 'apt-get upgrade -y'
+  # we're using the minimal image but there's a few extras we want
+  - 'apt-get install -y bash-completion cron file less logrotate lsof rsyslog strace tmux vim'
+  # don't want snapd
+  - 'apt-get remove -y --purge snapd'
+  - 'apt-get autoremove -y --purge'
+  # don't need cloud-init now it's set up
+  - 'apt-get remove -y --purge cloud-init'
+  - 'apt-get autoremove -y --purge'
+  - 'rm -rf /etc/cloud /var/lib/cloud /var/log/cloud-init.log'
+  - 'apt-get install -y netplan.io'
+  # cleanup caches and logs
+  - 'systemctl stop journald'
+  - 'rm -rf /var/log/journal/*'
+  - 'truncate -s 0 /var/log/syslog'
+  - 'truncate -s 0 /var/log/lastlog'
+  - 'rm -rf /var/cache/apt/* /var/lib/apt/lists/*'
+  # shutdown so the bootstrap process can continue
+  - 'shutdown now'

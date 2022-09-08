@@ -1,0 +1,8 @@
+#cloud-config
+
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    enp1s0:
+      dhcp4: true

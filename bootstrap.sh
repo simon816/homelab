@@ -1,47 +1,81 @@
 #!/bin/bash
 
+CLOUDIMG="/data/Virtualization/IMG/ubuntu-22.04-minimal-cloudimg-amd64.img"
 
-imgdir=/var/lib/libvirt/images
+IMGDIR="/var/lib/libvirt/images"
 
-for disk in controller cloud dbserver gateway sinkhole dev mail
-do
-    file=$imgdir/$disk.qcow2
-    if [ ! -e $file ]
+INITIMG="lab-base.qcow2"
+
+create_initial_image() {
+#    set -e
+    [ -e "$IMGDIR/$INITIMG" ] && return 0
+    sudo qemu-img convert -O qcow2 "$CLOUDIMG" "$IMGDIR/$INITIMG"
+    sudo qemu-img resize "$IMGDIR/$INITIMG" 4G
+
+    genisoimage -output init.iso -volid cidata -joliet -rock bootstrap/*
+
+    # starts the bootstrap VM and waits until shutdown
+    virt-install \
+        --name bootstrap-init-firstboot \
+        --memory 512 \
+        --vcpus 1 \
+        --os-type linux \
+        --os-variant ubuntu20.04 \
+        --network bridge=virbr0,model=virtio \
+        --nographics \
+        --disk path="$IMGDIR/$INITIMG",bus=virtio \
+        --disk path=init.iso,bus=virtio \
+        --import
+
+    virsh undefine bootstrap-init-firstboot
+    rm init.iso
+
+    # we're now left with INITIMG containing the base OS
+}
+
+create_disk() {
+    file="$IMGDIR/$1.qcow2"
+    if [ ! -e "$file" ]
     then
         echo Creating disk $file
-        sudo qemu-img create -f qcow2 -o backing_file=$imgdir/ubuntu_base.qcow2 $file
-        sudo chown libvirt-qemu:kvm $file
+        sudo cp "$IMGDIR/$INITIMG" "$file"
+        sudo chown libvirt-qemu:kvm "$file"
     fi
-done
+}
 
-mac=52:54:00:dc:86:46
+CONTROLLER=controller2
+MAC=52:54:00:dc:86:47
 
-exists=$(virsh list --all | grep controller)
+create_controller() {
+    [ -z "$(virsh list --all | grep $CONTROLLER)" ] || return 0
 
-if [ -z "$exists" ]
-then
+    create_disk $CONTROLLER
+
     virt-install \
-        -n controller \
+        -n $CONTROLLER \
         --os-type=Linux \
-        --os-variant ubuntu18.04 \
+        --os-variant ubuntu20.04 \
         --ram=512 \
         --vcpus=1 \
         --import \
-        --disk path=$imgdir/controller.qcow2,bus=virtio \
+        --disk path=$IMGDIR/$CONTROLLER.qcow2,bus=virtio \
         --network network=default \
-        --mac=$mac \
-        --graphics spice \
+        --mac=$MAC \
+        --nographics \
         --print-xml \
         | virsh define /dev/stdin
-fi
+}
 
-virsh start controller
+create_initial_image
+create_controller
+
+virsh start $CONTROLLER
 
 while :
 do
-    leases=$(virsh net-dhcp-leases default --mac $mac)
+    leases=$(virsh net-dhcp-leases default --mac $MAC)
     lnum=$(echo "$leases" | wc -l)
-    if [ ! $lnum -eq 3 ]
+    if [ $lnum -ne 3 ]
     then
         sleep 1
         continue
@@ -56,21 +90,25 @@ while :
 do
     nc -z $ip 22
     if [ $? -eq 0 ]; then break; fi
+    echo "Wait for SSH"
     sleep 1
 done
 
 echo "SSH open"
 
-scp -i ~/.ssh/ansible_rsa ~/.ssh/ansible_rsa* "ansible@$ip:~/.ssh/"
+scp -o "StrictHostKeyChecking no" -i ~/.ssh/ansible_rsa ~/.ssh/ansible_rsa* "ansible@$ip:~/.ssh/"
 
 ssh -i ~/.ssh/ansible_rsa ansible@$ip <<'EOF'
+sudo apt update
+sudo apt install --yes git software-properties-common
 ssh-keyscan 192.168.122.1 >> ~/.ssh/known_hosts
 mv .ssh/ansible_rsa .ssh/id_rsa
 mv .ssh/ansible_rsa.pub .ssh/id_rsa.pub
-git clone simon@192.168.122.1:~/Documents/labconfig
-mkdir labconfig/certs
+rm -rf homelab
+git clone simon@192.168.122.1:~/code/Lab/homelab
+mkdir homelab/certs
 sudo apt-add-repository --yes --update ppa:ansible/ansible
 sudo apt install --yes ansible
 EOF
 
-scp -i ~/.ssh/ansible_rsa ~/Documents/private/certs/* "ansible@$ip:~/labconfig/certs"
+scp -i ~/.ssh/ansible_rsa ~/code/Lab/private/certs/* "ansible@$ip:~/homelab/certs"
