@@ -24,7 +24,7 @@
       xml: '{{ lookup("template", "vm/" + item + ".xml.j2") }}'
     loop:
       - controller
-     # - gateway
+      - gateway
      # - cloud
      # - dbserver
      # - sinkhole
@@ -34,8 +34,8 @@
     virt:
       name: "{{ item }}"
       state: running
-    loop: []
-     # - gateway
+    loop:
+      - gateway2
      # - dbserver
      # - cloud
      # - sinkhole
