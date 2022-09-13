@@ -3,10 +3,10 @@
 {% set vm_mem = 512 * 1024 %}
 {% set intnet_mac = "52:54:00:34:ad:68" %}
 {% block devices %}
-   <interface type='network'>
-      <mac address='52:54:00:e9:5f:2b'/>
+    <interface type='network'>
+      <mac address='52:54:00:bc:a2:a2'/>
       <source network='default'/>
       <model type='virtio'/>
-      <address type='pci' domain='0x0000' bus='0x00' slot='0x09' function='0x0'/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x00' function='0x0'/>
     </interface>
 {% endblock %}
