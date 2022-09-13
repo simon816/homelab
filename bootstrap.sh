@@ -43,8 +43,14 @@ create_disk() {
     fi
 }
 
-CONTROLLER=controller2
-MAC=52:54:00:dc:86:47
+if [ "$1" == "disks" ]
+then
+    create_disk gateway2
+    exit
+fi
+
+CONTROLLER=controller
+MAC=52:54:00:dc:86:46
 
 create_controller() {
     [ -z "$(virsh list --all | grep $CONTROLLER)" ] || return 0
