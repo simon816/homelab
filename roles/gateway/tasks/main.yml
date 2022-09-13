@@ -69,7 +69,7 @@
   iptables:
     table: filter
     chain: FORWARD
-    out_interface: ens9
+    out_interface: enp2s0
     source: 10.80.0.0/24
     jump: DROP
   notify:
@@ -81,7 +81,7 @@
     table: nat
     chain: PREROUTING
     source: "!10.80.0.1/32" # hypervisor won't get redirected to VPN
-    in_interface: ens3
+    in_interface: enp1s0
     protocol: "{{ item }}"
     match: "{{ item }}"
     destination_port: "53"
