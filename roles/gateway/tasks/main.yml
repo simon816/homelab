@@ -24,6 +24,7 @@
 - name: Install persistent iptables
   become: yes
   apt:
+    update_cache: yes
     name: iptables-persistent
   notify:
     - save iptables
