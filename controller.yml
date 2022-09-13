@@ -5,7 +5,7 @@
   tasks:
     - name: Configure intnet netplan
       become: yes
-      file:
+      copy:
         src: net/controller-intnet.yaml
         dest: /etc/netplan/10-intnet.yaml
       notify:
