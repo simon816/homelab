@@ -11,6 +11,14 @@
       notify:
         - apply netplan
 
+    - name: Clear bootstrap network
+      become: yes
+      file:
+        state: absent
+        path: /etc/netplan/50-cloud-init.yaml
+      notify:
+        - apply netplan
+
     - name: Ensure ansible log directory
       become: yes
       file:

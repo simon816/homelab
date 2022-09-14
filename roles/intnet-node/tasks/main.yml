@@ -5,3 +5,11 @@
     dest: /etc/netplan/10-static-cfg.yaml
   notify:
     - apply netplan
+
+- name: Clear bootstrap network
+  become: yes
+  file:
+    state: absent
+    path: /etc/netplan/50-cloud-init.yaml
+  notify:
+    - apply netplan
