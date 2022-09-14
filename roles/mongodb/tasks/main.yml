@@ -1,6 +1,7 @@
 - name: Install DB packages
   become: yes
   apt:
+    update_cache: yes
     name: "{{ packages }}"
   vars:
     packages:
