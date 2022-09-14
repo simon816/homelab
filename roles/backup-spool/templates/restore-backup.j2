@@ -1,0 +1,23 @@
+#!/bin/bash
+
+basedir=/var/spool/backup
+
+{% if restore_scripts is defined %}{% for name, script in restore_scripts.items() %}
+
+restore_{{ name }}() {
+
+name="{{ name }}"
+
+echo "Restoring $name"
+
+{{ script }}
+}
+
+{% endfor %}{% endif %}
+
+case $1 in
+{% if restore_scripts is defined %}{% for name in restore_scripts.keys() %}
+{{ name }})
+    restore_{{ name }};;
+{% endfor %}{% endif %}
+esac

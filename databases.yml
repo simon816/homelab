@@ -58,6 +58,16 @@
             fi
             mkdir "$destdir"
             mongodump --username=root --password=root --out="$destdir"
+        restore_scripts:
+          mariadb: |
+            destdir="$basedir/$name"
+            mysql -u root < "$destdir/databases.sql"
+          postgres: |
+            destdir="$basedir/$name"
+            sudo -u postgres psql -f "$destdir/databases.sql" postgres
+          mongodb: |
+            destdir="$basedir/$name"
+            mongorestore --username=root --password=root "$destdir"
 
   tasks:
   - name: Ensure nextcloud db
