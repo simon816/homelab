@@ -35,7 +35,7 @@
       name: "{{ item }}"
       state: running
     loop:
-      - gateway2
+      - gateway
      # - dbserver
      # - cloud
      # - sinkhole
