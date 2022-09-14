@@ -1,4 +1,11 @@
 network:
   ethernets:
+    # intnet
+    enp1s0:
+      dhcp4: yes
+    # external
     enp2s0:
       dhcp4: yes
+  renderer: networkd
+  version: 2
+
