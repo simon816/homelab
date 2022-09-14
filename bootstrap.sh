@@ -45,7 +45,8 @@ create_disk() {
 
 if [ "$1" == "disks" ]
 then
-    create_disk gateway2
+    create_disk gateway
+    create_disk dbserver2
     exit
 fi
 

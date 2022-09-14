@@ -26,7 +26,7 @@
       - controller
       - gateway
      # - cloud
-     # - dbserver
+      - dbserver
      # - sinkhole
      # - mail
 
@@ -36,7 +36,7 @@
       state: running
     loop:
       - gateway
-     # - dbserver
+      - dbserver2
      # - cloud
      # - sinkhole
      # - mail

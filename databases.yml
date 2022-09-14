@@ -2,26 +2,26 @@
 - hosts: dbserver
   pre_tasks:
 
-  - name: Ensure secondary disk configured
-    become: yes
-    parted:
-      device: /dev/disk/by-path/pci-0000:00:09.0
-      number: 1
-      state: present
+#  - name: Ensure secondary disk configured
+#    become: yes
+#    parted:
+#      device: /dev/disk/by-path/pci-0000:00:09.0
+#      number: 1
+#      state: present
 
-  - name: Ensure secondary disk filesystem
-    become: yes
-    filesystem:
-      dev: /dev/disk/by-path/pci-0000:00:09.0-part1
-      fstype: ext4
+#  - name: Ensure secondary disk filesystem
+#    become: yes
+#    filesystem:
+#      dev: /dev/disk/by-path/pci-0000:00:09.0-part1
+#     fstype: ext4
 
-  - name: Mount secondary disk
-    become: yes
-    mount:
-      fstype: ext4
-      src: /dev/disk/by-path/pci-0000:00:09.0-part1
-      path: /srv
-      state: mounted
+#  - name: Mount secondary disk
+#    become: yes
+#    mount:
+#      fstype: ext4
+#     src: /dev/disk/by-path/pci-0000:00:09.0-part1
+#      path: /srv
+#      state: mounted
 
   roles:
     - intnet-node
