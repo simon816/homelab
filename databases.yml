@@ -97,6 +97,7 @@
       name: "{{ db.wekan.user }}"
       password: "{{ db.wekan.pass }}"
       roles: 'dbAdmin,readWrite'
+    when: False
 
   - name: Ensure xbrowsersync db and user
     mongodb_user:
@@ -107,6 +108,7 @@
       password: "{{ db.xbrowsersync.pass }}"
       roles: "readWrite"
     register: xbrowsersync_db
+    when: False
 
   - name: Copy xbrowsersync init db file
     template:
