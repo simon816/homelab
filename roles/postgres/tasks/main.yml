@@ -18,7 +18,7 @@
 
 - name: Get postgres data dir
   stat:
-    path: /var/lib/postgresql/10/main
+    path: /var/lib/postgresql/{{ major_version }}/main
   register: postgres_data
 
 - name: Stop postgres if first run
@@ -31,7 +31,7 @@
 - name: Remove default postgres data
   become: yes
   file:
-    path: /var/lib/postgresql/10/main
+    path: /var/lib/postgresql/{{ major_version }}/main
     state: absent
   when: not postgres_data.stat.islnk
 
@@ -39,7 +39,7 @@
   become: yes
   file:
     src: /srv/postgres
-    dest: /var/lib/postgresql/10/main
+    dest: /var/lib/postgresql/{{ major_version }}/main
     force: yes
     state: link
     owner: postgres
@@ -48,7 +48,7 @@
 - name: Setup initial postgres data
   become: yes
   become_user: postgres
-  command: /usr/lib/postgresql/10/bin/pg_ctl -D /var/lib/postgresql/10/main initdb
+  command: /usr/lib/postgresql/{{ major_version }}/bin/pg_ctl -D /var/lib/postgresql/{{ major_version }}/main initdb
   when: not postgres_data.stat.islnk
 
 - name: Ensure mariadb started
@@ -67,14 +67,14 @@
   become: yes
   copy:
     src: pg.conf
-    dest: /etc/postgresql/10/main/conf.d/10-dbserver.conf
+    dest: /etc/postgresql/{{ major_version }}/main/conf.d/10-dbserver.conf
   notify:
     - restart postgres
 
 - name: Configure postgres permissions
   become: yes
   blockinfile:
-    path: /etc/postgresql/10/main/pg_hba.conf
+    path: /etc/postgresql/{{ major_version }}/main/pg_hba.conf
     block: |
         host {{ db.gitlab.name }} {{ db.gitlab.user }} 10.80.0.7/32 md5
         host {{ db.ore.name }} {{ db.ore.user }} 10.80.0.1/32 md5
