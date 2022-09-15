@@ -26,7 +26,7 @@
   roles:
     - intnet-node
     - mariadb
-    - mongodb
+    #- mongodb
     - postgres
     - role: backup-spool
       vars:
