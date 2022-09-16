@@ -43,10 +43,21 @@ create_disk() {
     fi
 }
 
+aux_disk() {
+    file="$IMGDIR/$1.qcow2"
+    if [ ! -e "$file" ]
+    then
+        echo Creating disk $file
+        sudo qemu-img create -f qcow2 "$file" $2
+        sudo chown libvirt-qemu:kvm "$file"
+    fi
+}
+
 if [ "$1" == "disks" ]
 then
     create_disk gateway
     create_disk dbserver2
+    aux_disk db-data2 5G
     exit
 fi
 
