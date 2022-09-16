@@ -5,7 +5,7 @@ default-character-set = utf8mb4
 default-character-set = utf8mb4
 
 [mysqld]
-bind-address = 10.80.0.5
+bind-address = {{ inventory_hostname }}
 
 # For Nextcloud
 # https://docs.nextcloud.com/server/24/admin_manual/configuration_database/mysql_4byte_support.html

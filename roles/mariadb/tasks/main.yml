@@ -53,8 +53,8 @@
 
 - name: Copy mariadb configuration
   become: yes
-  copy:
-    src: config.cnf
+  template:
+    src: config.cnf.j2
     dest: /etc/mysql/mariadb.conf.d/60-dbserver.cnf
   notify:
     - restart mariadb

@@ -65,8 +65,8 @@
 
 - name: Copy postgres configuration
   become: yes
-  copy:
-    src: pg.conf
+  template:
+    src: pg.conf.j2
     dest: /etc/postgresql/{{ major_version }}/main/conf.d/10-dbserver.conf
   notify:
     - restart postgres
