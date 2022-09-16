@@ -8,6 +8,8 @@ users:
     sudo: "ALL=(ALL) NOPASSWD:ALL"
     shell: /bin/bash
 
+timezone: Europe/London
+
 runcmd:
   - 'apt-get update'
   - 'apt-get upgrade -y'
