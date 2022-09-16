@@ -39,7 +39,7 @@
               return
             fi
             mkdir "$destdir"
-            mysqldump -u root --single-transaction --add-drop-database --all-databases > "$destdir/databases.sql"
+            sudo -u mysql mysqldump --single-transaction --add-drop-database --all-databases > "$destdir/databases.sql"
           postgres: |
             destdir="$basedir/$name"
             if [[ -d "$destdir" ]]
@@ -61,7 +61,7 @@
         restore_scripts:
           mariadb: |
             destdir="$basedir/$name"
-            mysql -u root < "$destdir/databases.sql"
+            sudo -u mysql mysql < "$destdir/databases.sql"
           postgres: |
             destdir="$basedir/$name"
             sudo -u postgres psql -f "$destdir/databases.sql" postgres
