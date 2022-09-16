@@ -50,6 +50,7 @@
             mkdir "$destdir"
             sudo -u postgres pg_dumpall --clean > "$destdir/databases.sql"
           mongodb: |
+            return
             destdir="$basedir/$name"
             if [[ -d "$destdir" ]]
             then
@@ -64,8 +65,9 @@
             sudo -u mysql mysql < "$destdir/databases.sql"
           postgres: |
             destdir="$basedir/$name"
-            sudo -u postgres psql -f "$destdir/databases.sql" postgres
+            sudo -u postgres psql -f - postgres < "$destdir/databases.sql"
           mongodb: |
+            return
             destdir="$basedir/$name"
             mongorestore --username=root --password=root "$destdir"
 
