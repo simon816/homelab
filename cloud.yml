@@ -21,7 +21,7 @@
     - nextcloud
     - xbrowsersync
     - wekan
-    - pleroma
+    #- pleroma
     - ttrss
     - role: backup-spool
       vars:

@@ -50,8 +50,8 @@
 
 - name: Download nextcloud
   get_url:
-    url: https://download.nextcloud.com/server/releases/nextcloud-15.0.4.tar.bz2
-    checksum: "sha256:f87db047c174f563e391a22c959d9ace767ca14ef0f97fc394f3061fc63d8f77"
+    url: "https://download.nextcloud.com/server/releases/nextcloud-{{ nextcloud_version }}.tar.bz2"
+    checksum: "{{ tar_bz_checksum }}"
     dest: /tmp/
   when: not nextcloud_dir_stat.stat.exists
   register: nextcloud_tar
@@ -103,6 +103,7 @@
   become_user: www-data
   command: php /var/www/nextcloud/occ status --no-warnings --output=json
   register: nextcloud_status
+  when: install_firstrun
 
 - name: First-time Nextcloud installation
   become: yes
