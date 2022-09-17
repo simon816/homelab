@@ -71,18 +71,19 @@
 - name: Configure mongodb IP
   become: yes
   lineinfile:
-    path: /etc/mongodb.conf
-    regexp: '^bind_ip = .+'
-    line: "bind_ip = 0.0.0.0"
+    path: /etc/mongod.conf
+    regexp: '  bindIp: .+'
+    line: "  bindIp: '0.0.0.0'"
   notify:
     - restart mongod
 
-- name: Configure mongodb auth
+- name: Configure mongodb
   become: yes
-  lineinfile:
-    path: /etc/mongodb.conf
-    regexp: '^#?auth = .+'
-    line: 'auth = true'
+  blockinfile:
+    path: /etc/mongod.conf
+    block: |
+      security:
+        authorization: enabled
   notify:
     - restart mongod
 
