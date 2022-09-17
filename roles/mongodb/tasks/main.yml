@@ -23,7 +23,12 @@
   vars:
     packages:
     - mongodb-org-server
-    - python3-pymongo
+    - python3-pip
+
+- name: Install pymongo
+  become: yes
+  pip:
+    name: pymongo>=3.12
 
 - name: Ensure mongodb directory
   become: yes
