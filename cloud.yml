@@ -12,6 +12,7 @@
   - name: Install NFS
     become: yes
     apt:
+      update_cache: yes
       name: nfs-common
 
   roles:
