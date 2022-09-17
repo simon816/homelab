@@ -101,4 +101,3 @@
     password: root
     roles: root
   register: mongo_root_check
-  failed_when: false #"('rc' in mongo_root_check and mongo_root_check.rc != 0) or 'there are no users authenticated' not in mongo_root_check.stdout"
