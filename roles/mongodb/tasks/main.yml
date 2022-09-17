@@ -113,3 +113,10 @@
     name: root
     password: root
     roles: root
+
+- name: Enable mongod service
+  become: yes
+  service:
+    name: mongod
+    enabled: yes
+    state: started
