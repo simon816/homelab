@@ -18,6 +18,7 @@
     - nodejs
     - g++
     - build-essential
+    - unzip
 
 - name: Get is wekan downloaded
   stat:
@@ -37,13 +38,15 @@
   unarchive:
     src: "{{ wekan_dld.dest }}"
     remote_src: yes
-    creates: /var/www/wekan
+    creates: /var/www/bundle
     dest: /var/www/
     group: www-data
     owner: www-data
-    extra_opts:
-    - --transform
-    - s,^bundle,wekan,
+  when: wekan_dld is not skipped
+
+- name: Move bundle to correct location
+  become: yes
+  command: mv /var/www/bundle /var/www/wekan
   when: wekan_dld is not skipped
 
 - name: Install wekan
