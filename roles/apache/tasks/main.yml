@@ -1,3 +1,11 @@
+- name: Install apache
+  become: yes
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+    - apache2
+
 - import_tasks: ssl.yml
 
 - name: Configure apache common headers

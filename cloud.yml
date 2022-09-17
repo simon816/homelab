@@ -1,7 +1,14 @@
 ---
 - hosts: cloud
 
-  tasks:
+  pre_tasks:
+  - name: Expand disk
+    become: yes
+    command: growpart /dev/disk/by-path/pci-0000:00:07.0 1
+    register: growpart
+    changed_when: "'CHANGED' in growpart.stdout"
+    failed_when: "growpart.rc != 0 and 'NOCHANGE' not in growpart.stdout"
+
   - name: Install NFS
     become: yes
     apt:
