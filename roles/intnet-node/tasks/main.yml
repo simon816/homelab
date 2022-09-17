@@ -13,3 +13,7 @@
     path: /etc/netplan/50-cloud-init.yaml
   notify:
     - apply netplan
+
+# Need to apply netplan now for networking to work
+- name: Apply network now
+  meta: flush_handlers
