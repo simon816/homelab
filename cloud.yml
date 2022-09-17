@@ -23,6 +23,7 @@
     - wekan
     #- pleroma
     - ttrss
+    - rss-bridge
     - role: backup-spool
       vars:
         backup_paths:

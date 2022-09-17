@@ -1,0 +1,45 @@
+- name: Install rss-bridge dependencies
+  become: yes
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+    - git
+
+- name: Ensure rss-bridge dir
+  become: yes
+  file:
+    name: /var/www/rss-bridge
+    state: directory
+    owner: www-data
+    group: www-data
+
+- name: Ensure rss-bridge files
+  become: yes
+  become_user: www-data
+  git:
+    repo: "https://github.com/RSS-Bridge/rss-bridge.git"
+    dest: /var/www/rss-bridge
+
+- name: Configure rss-bridge apache
+  become: yes
+  copy:
+    src: rss-bridge.conf
+    dest: /etc/apache2/sites-available/rss-bridge.conf
+  notify:
+    - restart apache
+
+- name: Enable rss-bridge apache site
+  become: yes
+  command: a2ensite rss-bridge
+  args:
+    creates: /etc/apache2/sites-enabled/rss-bridge.conf
+  notify:
+    - restart apache
+
+- name: Configure rss-bridge whitelist
+  become: yes
+  become_user: www-data
+  copy:
+    src: whitelist.txt
+    dest: /var/www/rss-bridge/whitelist.txt
