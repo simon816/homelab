@@ -94,10 +94,22 @@
   notify:
     - restart mongod
 
-- name: Ensure mongodb root user
+# First run - cannot use login_user as it doesn't exist yet
+- name: Bootstrap mongodb root user
   mongodb_user:
     database: admin
     name: root
     password: root
     roles: root
-  register: mongo_root_check
+  register: bootstrap_user
+  # fail if error message is not the expected message
+  failed_when: "'msg' in bootstrap_user and 'command createUser requires authentication' not in bootstrap_user.msg"
+
+- name: Ensure mongodb root user
+  mongodb_user:
+    login_user: root
+    login_password: root
+    database: admin
+    name: root
+    password: root
+    roles: root
