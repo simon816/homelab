@@ -9,6 +9,7 @@
       <range start='10.80.0.2' end='10.80.0.254'/>
       <host mac='52:54:00:34:ad:68' name='gateway' ip='10.80.0.2'/>
       <host mac='52:54:00:21:83:1f' name='cloud' ip='10.80.0.4'/>
+      <host mac='52:54:00:21:83:20' name='cloud2' ip='10.80.0.104'/>
       <host mac='52:54:00:c7:3a:7e' name='dbserver' ip='10.80.0.5'/>
       <host mac='52:54:00:4f:5f:e8' name='sinkhole' ip='10.80.0.6'/>
       <host mac='52:54:00:6a:71:5b' name='dev' ip='10.80.0.7'/>

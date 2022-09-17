@@ -26,7 +26,7 @@
       - controller
       - gateway
       - dbserver
-     # - cloud
+      - cloud
      # - sinkhole
      # - mail
 
@@ -37,6 +37,6 @@
     loop:
       - gateway
       - dbserver
-     # - cloud
+      - cloud2
      # - sinkhole
      # - mail

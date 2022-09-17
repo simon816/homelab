@@ -40,6 +40,10 @@ create_disk() {
         echo Creating disk $file
         sudo cp "$IMGDIR/$INITIMG" "$file"
         sudo chown libvirt-qemu:kvm "$file"
+        if [ ! -z "$2" ]
+        then
+            sudo qemu-img resize "$file" "$2"
+        fi
     fi
 }
 
@@ -58,6 +62,7 @@ then
     create_disk gateway
     create_disk dbserver
     aux_disk db-data 5G
+    create_disk cloud2 6G
     exit
 fi
 

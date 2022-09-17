@@ -11,7 +11,7 @@ ansible_python_interpreter=/usr/bin/python3
 10.80.0.2
 
 [cloud]
-10.80.0.4
+10.80.0.104
 
 [dbserver]
 10.80.0.5
