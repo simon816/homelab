@@ -70,6 +70,10 @@
             mongorestore --username=root --password=root "$destdir"
 
   tasks:
+  # in case there were configuration changes that are required for the below
+  - name: Restart databases now
+    meta: flush_handlers
+
   - name: Ensure nextcloud db
     become: yes
     mysql_db:
