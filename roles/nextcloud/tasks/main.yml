@@ -23,7 +23,7 @@
   become: yes
   copy:
     src: nextcloud-php.ini
-    dest: /etc/php/7.2/apache2/conf.d/50-nextcloud.ini
+    dest: /etc/php/{{ php_version }}/apache2/conf.d/50-nextcloud.ini
   notify:
     - restart apache
 
