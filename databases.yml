@@ -115,7 +115,7 @@
     when: xbrowsersync_db.changed
 
   - name: Init xbrowsersync db
-    command: mongo /tmp/xbrowsersync-init.js
+    command: mongosh /tmp/xbrowsersync-init.js
     when: xbrowsersync_db.changed
 
   - name: Ensure gitlab db

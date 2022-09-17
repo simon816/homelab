@@ -23,6 +23,8 @@
   vars:
     packages:
     - mongodb-org-server
+    - mongodb-database-tools
+    - mongodb-mongosh
     - python3-pip
 
 - name: Install pymongo
