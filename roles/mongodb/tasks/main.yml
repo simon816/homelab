@@ -1,3 +1,20 @@
+- name: Ensure apt keys
+  become: yes
+  apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: "0x39BD841E4BE5FB195A65400E6A26B1AE64C3C388"
+
+- name: Ensure apt repositories
+  become: yes
+  apt_repository:
+    repo: "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse"
+
+- name: Install libssl1.1
+  become: yes
+  apt:
+    update_cache: yes
+    deb: "http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.16_amd64.deb"
+
 - name: Install DB packages
   become: yes
   apt:
@@ -5,7 +22,7 @@
     name: "{{ packages }}"
   vars:
     packages:
-    - mongodb-server
+    - mongodb-org-server
     - python3-pymongo
 
 - name: Ensure mongodb directory

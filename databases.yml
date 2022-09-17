@@ -26,7 +26,7 @@
   roles:
     - intnet-node
     - mariadb
-    #- mongodb
+    - mongodb
     - postgres
     - role: backup-spool
       vars:
@@ -50,7 +50,6 @@
             mkdir "$destdir"
             sudo -u postgres pg_dumpall --clean > "$destdir/databases.sql"
           mongodb: |
-            return
             destdir="$basedir/$name"
             if [[ -d "$destdir" ]]
             then
@@ -67,7 +66,6 @@
             destdir="$basedir/$name"
             sudo -u postgres psql -f - postgres < "$destdir/databases.sql"
           mongodb: |
-            return
             destdir="$basedir/$name"
             mongorestore --username=root --password=root "$destdir"
 
@@ -99,7 +97,6 @@
       name: "{{ db.wekan.user }}"
       password: "{{ db.wekan.pass }}"
       roles: 'dbAdmin,readWrite'
-    when: False
 
   - name: Ensure xbrowsersync db and user
     mongodb_user:
@@ -110,7 +107,6 @@
       password: "{{ db.xbrowsersync.pass }}"
       roles: "readWrite"
     register: xbrowsersync_db
-    when: False
 
   - name: Copy xbrowsersync init db file
     template:
