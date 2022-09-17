@@ -1,3 +1,9 @@
+- name: Install rsync
+  become: yes
+  apt:
+    update_cache: yes
+    name: rsync
+
 - name: Ensure backup spool directory
   become: yes
   file:

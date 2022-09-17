@@ -29,8 +29,20 @@
         backup_paths:
           pleroma_config: /var/www/pleroma/config/
           pleroma_uploads: /var/www/pleroma/uploads/
+          ttrss_icons: /var/www/ttrss/feed-icons/
         backup_scripts:
           nextcloud: |
             sudo -u www-data php /var/www/nextcloud/occ maintenance:mode --on
             perform_backup /var/www/nextcloud/
+            sudo -u www-data php /var/www/nextcloud/occ maintenance:mode --off
+        restore_scripts:
+          nextcloud: |
+            sudo -u www-data php /var/www/nextcloud/occ maintenance:mode --on
+            restore_path "nextcloud/config" "/var/www/nextcloud/config/"
+            restore_path "nextcloud/apps" "/var/www/nextcloud/apps/"
+            restore_path "nextcloud/themes" "/var/www/nextcloud/themes/"
+            sudo -u www-data php /var/www/nextcloud/occ maintenance:mode --off
+          nextcloud_all: |
+            sudo -u www-data php /var/www/nextcloud/occ maintenance:mode --on
+            restore_path "nextcloud" "/var/www/nextcloud/"
             sudo -u www-data php /var/www/nextcloud/occ maintenance:mode --off

@@ -15,9 +15,38 @@ echo "Restoring $name"
 
 {% endfor %}{% endif %}
 
+restore_path() {
+    name="$1"
+    dest="$2"
+    src="$basedir/$name/"
+    echo "Restoring $dest"
+    if [[ ! -d "$src" ]]
+    then
+        echo "Backup doesn't exist, refusing"
+        return
+    fi
+
+    sudo rsync -a --delete "$src" "$dest"
+}
+
+{% set names = [] %}
 case $1 in
 {% if restore_scripts is defined %}{% for name in restore_scripts.keys() %}
+{{ names.append(name) }}
 {{ name }})
     restore_{{ name }};;
 {% endfor %}{% endif %}
+
+{% if backup_paths is defined %}{% for name, path in backup_paths.items() %}
+{{ names.append(name) }}
+{{ name }})
+    restore_path "{{ name }}" "{{ path }}";;
+{% endfor %}{% endif %}
+
+*)
+    echo Options:
+    {% for name in names %}
+    echo "  {{ name }}"
+    {% endfor %}
+    ;;
 esac
