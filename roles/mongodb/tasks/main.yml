@@ -38,10 +38,10 @@
     path: /var/lib/mongodb
   register: mongodb_data
 
-- name: Stop mongodb if first run
+- name: Stop mongod if first run
   become: yes
   service:
-    name: mongodb
+    name: mongod
     state: stopped
   when: not mongodb_data.stat.islnk
 
@@ -62,10 +62,10 @@
     owner: mongodb
     group: mongodb
 
-- name: Ensure mongodb started
+- name: Ensure mongod started
   become: yes
   service:
-    name: mongodb
+    name: mongod
     state: started
 
 - name: Configure mongodb IP
@@ -75,7 +75,7 @@
     regexp: '^bind_ip = .+'
     line: "bind_ip = 0.0.0.0"
   notify:
-    - restart mongodb
+    - restart mongod
 
 - name: Configure mongodb auth
   become: yes
@@ -84,7 +84,7 @@
     regexp: '^#?auth = .+'
     line: 'auth = true'
   notify:
-    - restart mongodb
+    - restart mongod
 
 - name: Ensure mongodb root user
   mongodb_user:
