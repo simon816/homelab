@@ -23,6 +23,10 @@
       password_lock: yes
       shell: /sbin/nologin
 
+  - name: Early networking
+    import_role:
+      name: intnet-node
+
   - name: Install NFS
     become: yes
     apt:
@@ -38,7 +42,6 @@
       state: mounted
 
   roles:
-    - intnet-node
     - sonarr
     - radarr
     - jackett

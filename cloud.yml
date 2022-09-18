@@ -16,6 +16,10 @@
       fstype: ext4
       resizefs: yes
 
+  - name: Early networking
+    import_role:
+      name: intnet-node
+
   - name: Install NFS
     become: yes
     apt:
@@ -31,7 +35,6 @@
       search_string: "rss-bridge.simon816.com"
 
   roles:
-    - intnet-node
     - apache
     - nextcloud
     - xbrowsersync
