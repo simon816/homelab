@@ -7,15 +7,12 @@ Wants=deluged.service
 [Service]
 User=sinkhole
 Group=sinkhole
+Type=simple
 UMask=027
-# This 5 second delay is necessary on some systems
-# to ensure deluged has been fully started
-ExecStartPre=/bin/sleep 5
-ExecStart=/usr/bin/deluge-web
+
+ExecStart=/usr/bin/deluge-web -d -c /var/lib/deluged/config
+
 Restart=on-failure
-StandardOutput=syslog
-StandardError=syslog
-SyslogIdentifier=deluge-web
 
 [Install]
 WantedBy=multi-user.target
