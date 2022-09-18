@@ -26,6 +26,29 @@
   notify:
     - reload postfix
 
+- name: Copy postfix posteo auth
+  become: yes
+  copy:
+    src: mail-keys/postfix-password
+    dest: /etc/postfix/password
+    owner: root
+    group: root
+    mode: 0600
+
+- name: Ensure mail cert directory
+  become: yes
+  file:
+    path: /etc/ssl/mail
+    state: directory
+
+- name: Copy gateway client cert
+  become: yes
+  copy:
+    src: mail-keys/mxgateway.simon816.com.cert.pem
+    dest: /etc/ssl/mail/mxgateway.simon816.com.cert.pem
+  notify:
+    - reload postfix
+
 - name: Copy dovecot configuration
   become: yes
   copy:
@@ -34,6 +57,17 @@
   with_fileglob:
     - "dovecot/*.conf"
     - "dovecot/*.conf.ext"
+  notify:
+    - reload dovecot
+
+- name: Copy posteo password
+  become: yes
+  copy:
+    src: mail-keys/posteo_password
+    dest: /etc/dovecot/posteo_password
+    owner: root
+    group: root
+    mode: 0600
   notify:
     - reload dovecot
 
@@ -79,6 +113,17 @@
   copy:
     src: opendkim/opendkim.conf
     dest: /etc/opendkim.conf
+  notify:
+    - restart opendkim
+
+- name: opendkim key
+  become: yes
+  copy:
+    src: mail-keys/simon816.com-dkim.key
+    dest: /etc/dkimkeys/simon816.com-dkim.key
+    owner: opendkim
+    group: opendkim
+    mode: 0600
   notify:
     - restart opendkim
 
