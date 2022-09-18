@@ -27,6 +27,25 @@
     src: /srv/downloads
     dest: /var/lib/deluged/Downloads
     state: link
+    owner: sinkhole
+    group: sinkhole
+
+- name: Ensure correct config permissions
+  become: yes
+  file:
+    path: "{{ item }}"
+    owner: sinkhole
+    group: sinkhole
+  loop:
+    - /var/lib/deluged
+    - /var/lib/deluged/config
+
+- name: Ensure correct log permissions
+  become: yes
+  file:
+    path: /var/log/deluged
+    owner: sinkhole
+    group: adm
 
 - name: Configure deluge daemon
   become: yes
