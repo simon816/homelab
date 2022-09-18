@@ -109,6 +109,38 @@
   notify:
     - reload dovecot
 
+- name: Standard sieve directory
+  become: yes
+  become_user: simon
+  file:
+    path: /home/simon/sieve
+    state: directory
+    mode: 0700
+
+- name: stat main.sieve
+  become: yes
+  become_user: simon
+  stat:
+    path: /home/simon/sieve/main.sieve
+  register: sieve_stat
+
+- name: Standard sieve file
+  become: yes
+  become_user: simon
+  file:
+    path: /home/simon/sieve/main.sieve
+    mode: 0600
+    state: touch
+  when: not sieve_stat.stat.exists
+
+- name: Standard sieve layout
+  become: yes
+  become_user: simon
+  file:
+    src: /home/simon/sieve/main.sieve
+    dest: /home/simon/.dovecot.sieve
+    state: link
+
 - name: Copy dovecot sync code
   become: yes
   copy:

@@ -59,6 +59,8 @@
     - mail-server
     - role: backup-spool
       vars:
+        backup_paths:
+          sieve: /home/simon/sieve
         backup_scripts:
           dovecot: |
             sudo doveadm backup -u simon maildir:/home/dovecot-backup
