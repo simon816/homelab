@@ -17,7 +17,7 @@ ansible_python_interpreter=/usr/bin/python3
 10.80.0.5
 
 [sinkhole]
-10.80.0.106
+10.80.0.6
 
 [dev]
 10.80.0.7
