@@ -28,7 +28,7 @@
       - dbserver
       - cloud
       - sinkhole
-     # - mail
+      - mail
 
   - name: Ensure machines are running
     virt:
@@ -39,4 +39,4 @@
       - dbserver
       - cloud
       - sinkhole
-     # - mail
+      - mail2

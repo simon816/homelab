@@ -13,6 +13,7 @@
       <host mac='52:54:00:4f:5f:e9' name='sinkhole' ip='10.80.0.6'/>
       <host mac='52:54:00:6a:71:5b' name='dev' ip='10.80.0.7'/>
       <host mac='52:54:00:24:25:1b' name='mail' ip='10.80.0.8'/>
+      <host mac='52:54:00:24:25:1c' name='mail2' ip='10.80.0.108'/>
     </dhcp>
   </ip>
 </network>
