@@ -62,7 +62,7 @@ then
     create_disk gateway
     create_disk dbserver
     aux_disk db-data 5G
-    create_disk cloud2 6G
+    create_disk cloud 6G
     exit
 fi
 

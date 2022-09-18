@@ -37,6 +37,6 @@
     loop:
       - gateway
       - dbserver
-      - cloud2
+      - cloud
      # - sinkhole
      # - mail
