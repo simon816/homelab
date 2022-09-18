@@ -18,6 +18,10 @@
     - php-zip
     - php-bcmath
     - php-gmp
+    - php-bz2
+    - libmagickcore-6.q16-6-extra
+  notify:
+    - restart apache
 
 - name: PHP configuration
   become: yes
@@ -132,6 +136,7 @@
       php /var/www/nextcloud/occ config:system:set htaccess.RewriteBase --value='/'
       php /var/www/nextcloud/occ config:system:set default_locale --value='en_GB'
       php /var/www/nextcloud/occ config:system:set trusted_domains 1 --value="nextcloud.simon816.com"
+      php /var/www/nextcloud/occ config:system:set default_phone_region --value GB
       php /var/www/nextcloud/occ maintenance:repair
       php /var/www/nextcloud/occ db:convert-filecache-bigint --no-interaction
       php /var/www/nextcloud/occ maintenance:update:htaccess
