@@ -1,0 +1,15 @@
+- name: "stat {{ dbfile }}"
+  become: yes
+  stat:
+    path: "/etc/postfix/{{ item }}"
+  loop:
+    - "{{ dbfile }}"
+    - "{{ dbfile }}.db"
+  register: db_stat
+
+- name: "postmap {{ dbfile }}"
+  become: yes
+  command: "postmap /etc/postfix/{{ dbfile }}"
+  when: "not db_stat.results[1].stat.exists or db_stat.results[0].stat.mtime > db_stat.results[1].stat.mtime"
+  notify:
+    - reload postfix

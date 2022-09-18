@@ -35,6 +35,25 @@
     group: root
     mode: 0600
 
+- name: postfix mailname
+  become: yes
+  copy:
+    content: "mail.simon816.com\n"
+    dest: /etc/mailname
+  notify:
+    - reload postfix
+
+- name: postmap
+  include_tasks: postmap.yml
+  loop:
+    - header_checks
+    - sender_map
+    - sender_canonical
+    - password
+    - virtual
+  loop_control:
+    loop_var: dbfile
+
 - name: Ensure mail cert directory
   become: yes
   file:
@@ -76,6 +95,17 @@
   copy:
     src: dovecot/users
     dest: /etc/dovecot/users
+  notify:
+    - reload dovecot
+
+- name: Copy dovecot auth
+  become: yes
+  copy:
+    src: mail-keys/dovecot-passwd
+    dest: /etc/dovecot/passwd
+    owner: dovecot
+    group: dovecot
+    mode: 0600
   notify:
     - reload dovecot
 
