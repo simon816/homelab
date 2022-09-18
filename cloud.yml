@@ -9,11 +9,26 @@
     changed_when: "'CHANGED' in growpart.stdout"
     failed_when: "growpart.rc != 0 and 'NOCHANGE' not in growpart.stdout"
 
+  - name: Expand filesystem if needed
+    become: yes
+    filesystem:
+      dev: /dev/disk/by-path/pci-0000:00:07.0-part1
+      fstype: ext4
+      resizefs: yes
+
   - name: Install NFS
     become: yes
     apt:
       update_cache: yes
       name: nfs-common
+
+  tasks:
+  - name: rss-bridge hosts
+    become: yes
+    lineinfile:
+      path: /etc/hosts
+      line: "{{ inventory_hostname }} rss-bridge.simon816.com"
+      search_string: "rss-bridge.simon816.com"
 
   roles:
     - intnet-node
