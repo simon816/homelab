@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+echo -e "Channel\t|\tNum missing\t|\tStored percentage\t|\tApprox disk space (GB)"
+
+sqlite3 -column /srv/YouTube/youtube.db "select c.title, count(*) - count(sv.id), (count(sv.id) / CAST(count(*) AS real)) * 100, (sum(case when sv.id is null then cv.duration else 0 end) * 229.93) / 1024 / 1024 from channels c join ignored_channels i on i.ch_id = c.id join channel_video cv on cv.ch_id = c.id left join stored_video sv on sv.cv_id = cv.id where not exists(select 1 from ia_video ia where ia.video_id = cv.video_id) and not exists(select 1 from fetch_jobs j where j.cv_id = cv.id and retry = 10) group by c.id order by 4"

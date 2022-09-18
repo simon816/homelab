@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+sqlite3 -column /srv/YouTube/youtube.db "select c.title, cv.published_at, cv.title, cv.video_id from channel_video cv join fetch_jobs on cv_id = cv.id join channels c on c.id = ch_id where retry = 10 order by c.title, cv.published_at"

@@ -48,6 +48,7 @@
     - deluge
     #- sabnzbplus
     - nginx
+    - youtube-fetcher
     - role: backup-spool
       vars:
         backup_paths:

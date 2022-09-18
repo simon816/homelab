@@ -1,0 +1,17 @@
+[Unit]
+Description=Youtube Metadata Fetcher
+After=network.target
+
+[Service]
+WorkingDirectory=/srv/YouTube
+ExecStart=/usr/bin/env python3 /srv/YouTube/metadata.py
+User=sinkhole
+Group=sinkhole
+Restart=always
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=youtube-metadata
+
+[Install]
+WantedBy=multi-user.target

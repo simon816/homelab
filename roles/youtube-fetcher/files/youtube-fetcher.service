@@ -1,0 +1,18 @@
+[Unit]
+Description=Youtube Video Fetcher
+After=network.target
+
+[Service]
+WorkingDirectory=/srv/YouTube
+ExecStart=/usr/bin/env python3 /srv/YouTube/fetcher.py
+ExecReload=/bin/kill -HUP $MAINPID
+User=sinkhole
+Group=sinkhole
+Restart=always
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=youtube-fetcher
+
+[Install]
+WantedBy=multi-user.target
