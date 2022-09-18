@@ -38,6 +38,8 @@
     state: directory
 
 - name: Get jackett data dir
+  become: yes
+  become_user: sinkhole
   stat:
     path: /home/sinkhole/.config/Jackett/Indexers
   register: jackett_data_stat
@@ -48,7 +50,7 @@
   file:
     path: /home/sinkhole/.config/Jackett/Indexers
     state: absent
-  when: not jackett_data_stat.stat.islnk
+  when: jackett_data_stat.stat.exists and not jackett_data_stat.stat.islnk
 
 - name: Link jackett data
   become: yes
