@@ -7,7 +7,7 @@
 - name: Ensure apt repositories
   become: yes
   apt_repository:
-    repo: "deb https://apt.sonarr.tv/ubuntu bionic main"
+    repo: "deb https://apt.sonarr.tv/ubuntu focal main"
 
 - name: Install packages
   become: yes

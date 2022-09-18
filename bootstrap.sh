@@ -63,6 +63,7 @@ then
     create_disk dbserver
     aux_disk db-data 5G
     create_disk cloud 6G
+    create_disk sinkhole2 6G
     exit
 fi
 

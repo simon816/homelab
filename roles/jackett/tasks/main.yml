@@ -13,8 +13,8 @@
 
 - name: Download Jackett
   get_url:
-    url: "https://github.com/Jackett/Jackett/releases/download/v0.10.731/Jackett.Binaries.Mono.tar.gz"
-    checksum: "sha256:13d0b8024d9a41df5ff2f186e16708d4769fee4935680ba9391150256b600bb3"
+    url: "https://github.com/Jackett/Jackett/releases/download/{{ jackett_version }}/Jackett.Binaries.LinuxAMDx64.tar.gz"
+    checksum: "{{ jackett_tar_checksum }}"
     dest: /tmp/
   register: jackett_dld
   when: not jackett_stat.stat.exists
@@ -30,7 +30,7 @@
     group: sinkhole
   when: jackett_dld is not skipped
 
-- name: Ensure jacket config dir
+- name: Ensure jackett config dir
   become: yes
   become_user: sinkhole
   file:

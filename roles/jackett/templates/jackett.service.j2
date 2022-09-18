@@ -3,7 +3,9 @@ Description=Jackett Daemon
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/env mono /opt/Jackett/JackettConsole.exe --NoRestart
+ExecStart=/bin/sh "/opt/Jackett/jackett_launcher.sh"
+WorkingDirectory=/opt/Jackett
+Type=simple
 User=sinkhole
 Group=sinkhole
 Restart=always

@@ -27,7 +27,7 @@
       - gateway
       - dbserver
       - cloud
-     # - sinkhole
+      - sinkhole
      # - mail
 
   - name: Ensure machines are running
@@ -38,5 +38,5 @@
       - gateway
       - dbserver
       - cloud
-     # - sinkhole
+      - sinkhole2
      # - mail
