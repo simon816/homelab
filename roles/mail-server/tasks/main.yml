@@ -54,6 +54,14 @@
   loop_control:
     loop_var: dbfile
 
+- name: aliases file
+  become: yes
+  copy:
+    src: postfix/aliases
+    dest: /etc/aliases
+  notify:
+    - postalias
+
 - name: Ensure mail cert directory
   become: yes
   file:

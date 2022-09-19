@@ -1,3 +1,7 @@
+- name: postalias
+  become: yes
+  command: postalias /etc/aliases
+
 - name: reload postfix
   become: yes
   service:
