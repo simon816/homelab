@@ -56,6 +56,7 @@ class ChangeSet:
         flag_targets = defaultdict(lambda: defaultdict(list))
         copy_targets = defaultdict(lambda: defaultdict(list))
         delete_targets = defaultdict(list)
+        n_deletes = 0
         for k, actions in self.mail_actions.items():
             actions = self.rewrite_move(actions)
             for (atype, *args) in actions:
@@ -63,6 +64,11 @@ class ChangeSet:
                     flags, mailbox, uid = args
                     flag_targets[flags][mailbox].append(uid)
                 elif atype == 'delete':
+                    n_deletes += 1
+                    if n_deletes > 1000:
+                        if n_deletes == 1001:
+                            print("Over 1000 deletes. Limiting to first 1000")
+                        continue
                     mailbox, uid = args
                     delete_targets[mailbox].append(uid)
                 elif atype == 'copy':
@@ -258,6 +264,11 @@ def sync_all_mailboxes(r, changeset):
     changeset.apply()
 
     if remote_boxes:
+        if len(remote_boxes) > 10:
+            raise Exception("Refusing to delete many mailboxes: %s" % remote_boxes)
+        if len(remote_boxes) > 3:
+            print("Attempt to delete many mailboxes. Only deleting 1.", remote_boxes)
+            remote_boxes = [next(iter(remote_boxes))]
         doveadm.delete_mailbox(*remote_boxes)
 
 
