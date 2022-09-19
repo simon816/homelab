@@ -60,10 +60,10 @@
     - role: backup-spool
       vars:
         backup_paths:
-          sieve: /home/simon/sieve
+          sieve: /home/simon/sieve/
         backup_scripts:
           dovecot: |
             sudo doveadm backup -u simon maildir:/home/dovecot-backup
         restore_scripts:
           dovecot: |
-            sudo doveadm -o mail_location=maildir:/home/dovecot-backup sync -u simon maildir:~/Maildir
+            sudo doveadm -o mail_location=maildir:/home/dovecot-backup backup -u simon maildir:~/Maildir
