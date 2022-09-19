@@ -39,7 +39,7 @@
               return
             fi
             mkdir "$destdir"
-            sudo -u mysql mysqldump --single-transaction --add-drop-database --all-databases > "$destdir/databases.sql"
+            sudo -u mysql mysqldump -u root --single-transaction --add-drop-database --all-databases > "$destdir/databases.sql"
           postgres: |
             destdir="$basedir/$name"
             if [[ -d "$destdir" ]]
