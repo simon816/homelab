@@ -163,6 +163,12 @@
     minute: "0,30"
     job: "/etc/dovecot/sync/sync-mailboxes 2>&1 | logger -t sync-mailboxes"
 
+- name: Utility scripts
+  copy:
+    src: utils/
+    dest: /home/ansible/
+    mode: 0775
+
 - name: Postfix in DKIM group
   become: yes
   user:
