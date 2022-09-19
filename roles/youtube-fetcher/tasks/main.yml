@@ -19,6 +19,7 @@
     dest: /usr/local/bin/yt-dlp
     owner: sinkhole
     group: sinkhole
+    mode: 0775
   when: not yt_dlp_stat.stat.exists
 
 - name: Configure youtube-metadata-fetcher service
