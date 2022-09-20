@@ -1,6 +1,18 @@
+- name: Ensure apt keys
+  become: yes
+  apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: "0x9FD3B784BC1C6FC31A8A0A1C1655A0AB68576280"
+
+- name: Ensure apt repositories
+  become: yes
+  apt_repository:
+    repo: "deb https://deb.nodesource.com/node_14.x jammy main"
+
 - name: Install xbrowsersync dependencies
   become: yes
   apt:
+    update_cache: yes
     name: "{{ packages }}"
   vars:
     packages:

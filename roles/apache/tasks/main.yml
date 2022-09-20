@@ -1,3 +1,26 @@
+- name: Install apache
+  become: yes
+  apt:
+    name: "{{ packages }}"
+    update_cache: yes
+  vars:
+    packages:
+    - apache2
+
+- name: Enable apache modules for common headers
+  become: yes
+  apache2_module:
+    state: present
+    name: "{{ item }}"
+  loop:
+    - headers
+    - ssl
+  notify:
+    - restart apache
+
+- name: Restart apache now
+  meta: flush_handlers
+
 - import_tasks: ssl.yml
 
 - name: Configure apache common headers

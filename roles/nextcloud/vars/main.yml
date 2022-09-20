@@ -1,0 +1,5 @@
+---
+php_version: "8.1"
+nextcloud_version: "24.0.5"
+tar_bz_checksum: "sha256:b22788377ccb9391e7f9eced3f69a9236669aeaab2e0ea5250a73edf5f1ef026"
+install_firstrun: false

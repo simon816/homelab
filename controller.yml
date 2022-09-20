@@ -5,9 +5,17 @@
   tasks:
     - name: Configure intnet netplan
       become: yes
-      file:
+      copy:
         src: net/controller-intnet.yaml
         dest: /etc/netplan/10-intnet.yaml
+      notify:
+        - apply netplan
+
+    - name: Clear bootstrap network
+      become: yes
+      file:
+        state: absent
+        path: /etc/netplan/50-cloud-init.yaml
       notify:
         - apply netplan
 

@@ -1,27 +1,64 @@
 ---
 - hosts: cloud
 
-  tasks:
+  pre_tasks:
+  - name: Expand disk
+    become: yes
+    command: growpart /dev/disk/by-path/pci-0000:00:07.0 1
+    register: growpart
+    changed_when: "'CHANGED' in growpart.stdout"
+    failed_when: "growpart.rc != 0 and 'NOCHANGE' not in growpart.stdout"
+
+  - name: Expand filesystem if needed
+    become: yes
+    filesystem:
+      dev: /dev/disk/by-path/pci-0000:00:07.0-part1
+      fstype: ext4
+      resizefs: yes
+
+  - name: Early networking
+    import_role:
+      name: intnet-node
+
   - name: Install NFS
     become: yes
     apt:
+      update_cache: yes
       name: nfs-common
 
+  tasks:
+  - name: rss-bridge hosts
+    become: yes
+    lineinfile:
+      path: /etc/hosts
+      line: "{{ inventory_hostname }} rss-bridge.simon816.com"
+      search_string: "rss-bridge.simon816.com"
+
   roles:
-    - intnet-node
     - apache
     - nextcloud
     - xbrowsersync
     - wekan
-    - pleroma
+    #- pleroma
     - ttrss
+    - rss-bridge
     - role: backup-spool
       vars:
         backup_paths:
           pleroma_config: /var/www/pleroma/config/
           pleroma_uploads: /var/www/pleroma/uploads/
+          ttrss_icons: /var/www/ttrss/feed-icons/
         backup_scripts:
           nextcloud: |
             sudo -u www-data php /var/www/nextcloud/occ maintenance:mode --on
             perform_backup /var/www/nextcloud/
+            sudo -u www-data php /var/www/nextcloud/occ maintenance:mode --off
+        restore_scripts:
+          nextcloud: |
+            sudo -u www-data php /var/www/nextcloud/occ maintenance:mode --on
+            restore_path "nextcloud/config" "/var/www/nextcloud/config/"
+            sudo -u www-data php /var/www/nextcloud/occ maintenance:mode --off
+          nextcloud_all: |
+            sudo -u www-data php /var/www/nextcloud/occ maintenance:mode --on
+            restore_path "nextcloud" "/var/www/nextcloud/"
             sudo -u www-data php /var/www/nextcloud/occ maintenance:mode --off

@@ -1,12 +1,37 @@
 ---
 - hosts: sinkhole
+
   pre_tasks:
+  - name: Expand disk
+    become: yes
+    command: growpart /dev/disk/by-path/pci-0000:00:07.0 1
+    register: growpart
+    changed_when: "'CHANGED' in growpart.stdout"
+    failed_when: "growpart.rc != 0 and 'NOCHANGE' not in growpart.stdout"
+
+  - name: Expand filesystem if needed
+    become: yes
+    filesystem:
+      dev: /dev/disk/by-path/pci-0000:00:07.0-part1
+      fstype: ext4
+      resizefs: yes
+
   - name: sinkhole user
     become: yes
     user:
       name: sinkhole
       password_lock: yes
       shell: /sbin/nologin
+
+  - name: Early networking
+    import_role:
+      name: intnet-node
+
+  - name: Install NFS
+    become: yes
+    apt:
+      update_cache: yes
+      name: nfs-common
 
   - name: Mount sinkhole NFS
     become: yes
@@ -17,13 +42,13 @@
       state: mounted
 
   roles:
-    - intnet-node
     - sonarr
     - radarr
     - jackett
     - deluge
-    - sabnzbplus
+    #- sabnzbplus
     - nginx
+    - youtube-fetcher
     - role: backup-spool
       vars:
         backup_paths:

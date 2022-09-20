@@ -4,23 +4,45 @@
   - name: Ensure data disk configured
     become: yes
     parted:
-      device: /dev/disk/by-path/pci-0000:00:09.0
+      device: /dev/disk/by-path/pci-0000:02:00.0
       number: 1
       state: present
 
   - name: Ensure data disk filesystem
     become: yes
     filesystem:
-      dev: /dev/disk/by-path/pci-0000:00:09.0-part1
+      dev: /dev/disk/by-path/pci-0000:02:00.0-part1
       fstype: ext4
+
+  - name: Copy home directory to data disk
+    become: yes
+    # need to apply the real mount at the end as ansible can't ssh auth without /home
+    shell: |
+        set -e
+        mount /dev/disk/by-path/pci-0000:02:00.0-part1 /mnt
+        cp -ra /home/* /mnt/
+        umount /mnt
+        rm -rf /home/*
+        mount /dev/disk/by-path/pci-0000:02:00.0-part1 /home
+    when: "ansible_mounts | selectattr('mount', 'equalto', '/home') | length() == 0"
 
   - name: Mount data disk
     become: yes
     mount:
       fstype: ext4
-      src: /dev/disk/by-path/pci-0000:00:09.0-part1
+      src: /dev/disk/by-path/pci-0000:02:00.0-part1
       path: /home
       state: mounted
+
+  - name: Mail users
+    become: yes
+    user:
+      name: "{{ item.name }}"
+      password_lock: yes
+      shell: /sbin/nologin
+      uid: "{{ item.uid }}"
+    loop:
+      - { name: simon, uid: 1001 }
 
   tasks:
   - name: Backup directory
@@ -37,6 +59,11 @@
     - mail-server
     - role: backup-spool
       vars:
+        backup_paths:
+          sieve: /home/simon/sieve/
         backup_scripts:
           dovecot: |
             sudo doveadm backup -u simon maildir:/home/dovecot-backup
+        restore_scripts:
+          dovecot: |
+            sudo doveadm -o mail_location=maildir:/home/dovecot-backup backup -u simon maildir:~/Maildir

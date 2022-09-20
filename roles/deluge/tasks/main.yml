@@ -9,6 +9,7 @@
       - deluge-console
 
 - name: Get deluge download dir
+  become: yes
   stat:
     path: /var/lib/deluged/Downloads
   register: deluge_dir_stat
@@ -18,7 +19,7 @@
   file:
     path: /var/lib/deluged/Downloads
     state: absent
-  when: not deluge_dir_stat.stat.islnk
+  when: deluge_dir_stat.stat.exists and not deluge_dir_stat.stat.islnk
 
 - name: Link deluge downloads
   become: yes
@@ -26,6 +27,25 @@
     src: /srv/downloads
     dest: /var/lib/deluged/Downloads
     state: link
+    owner: sinkhole
+    group: sinkhole
+
+- name: Ensure correct config permissions
+  become: yes
+  file:
+    path: "{{ item }}"
+    owner: sinkhole
+    group: sinkhole
+  loop:
+    - /var/lib/deluged
+    - /var/lib/deluged/config
+
+- name: Ensure correct log permissions
+  become: yes
+  file:
+    path: /var/log/deluged
+    owner: sinkhole
+    group: adm
 
 - name: Configure deluge daemon
   become: yes

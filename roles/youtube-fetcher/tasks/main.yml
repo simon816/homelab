@@ -1,0 +1,71 @@
+- name: Install dependencies
+  become: yes
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+    - ffmpeg
+
+- name: Get is yt-dlp installed
+  stat:
+    path: /usr/local/bin/yt-dlp
+  register: yt_dlp_stat
+
+- name: Download yt-dlp
+  become: yes
+  get_url:
+    url: https://github.com/yt-dlp/yt-dlp/releases/download/2022.09.01/yt-dlp
+    checksum: "sha256:3db4b47c28f9cab13bfd470ad66a2eb98a82fe42c36a202d001d7cea700af616"
+    dest: /usr/local/bin/yt-dlp
+    owner: sinkhole
+    group: sinkhole
+    mode: 0775
+  when: not yt_dlp_stat.stat.exists
+
+- name: Configure youtube-metadata-fetcher service
+  become: yes
+  copy:
+    src: youtube-metadata-fetcher.service
+    dest: /etc/systemd/system/youtube-metadata-fetcher.service
+  notify:
+    - restart youtube-metadata-fetcher
+
+- name: Ensure youtube-fetcher cron
+  become: yes
+  cron:
+    name: youtube_fetcher
+    minute: '10'
+    job: "sh -c 'cd /srv/YouTube && python3 coordinator.py cron'"
+    user: sinkhole
+
+- name: Utility scripts
+  copy:
+    src: "utils/{{ item }}"
+    dest: "/home/ansible/{{ item }}"
+    mode: 0775
+  loop:
+    - channel-percentages
+    - get-active-downloads
+    - missing-videos
+
+- name: Enable youtube-metadata-fetcher service
+  become: yes
+  service:
+    name: youtube-metadata-fetcher
+    enabled: yes
+    state: started
+
+- name: Configure youtube-fetcher service
+  become: yes
+  copy:
+    src: youtube-fetcher.service
+    dest: /etc/systemd/system/youtube-fetcher.service
+  notify:
+    - restart youtube-fetcher
+
+- name: Enable youtube-fetcher service
+  become: yes
+  service:
+    name: youtube-fetcher
+    enabled: yes
+    state: started

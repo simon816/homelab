@@ -7,7 +7,7 @@
 - name: Ensure apt repositories
   become: yes
   apt_repository:
-    repo: "deb https://deb.nodesource.com/node_14.x bionic main"
+    repo: "deb https://deb.nodesource.com/node_14.x jammy main"
 
 - name: Install wekan dependencies
   become: yes
@@ -18,6 +18,7 @@
     - nodejs
     - g++
     - build-essential
+    - unzip
 
 - name: Get is wekan downloaded
   stat:
@@ -26,8 +27,8 @@
 
 - name: Download wekan
   get_url:
-    url: https://releases.wekan.team/wekan-2.46.tar.gz
-    checksum: "sha256:df6c0466b11596f2ce85c4f21242922d9e602c84146d9bf0cb1a36c7c2bad126"
+    url: https://releases.wekan.team/wekan-{{ wekan_version }}.zip
+    checksum: "{{ wekan_zip_checksum }}"
     dest: /tmp/
   when: not wekan_dir_stat.stat.exists
   register: wekan_dld
@@ -37,13 +38,15 @@
   unarchive:
     src: "{{ wekan_dld.dest }}"
     remote_src: yes
-    creates: /var/www/wekan
+    creates: /var/www/bundle
     dest: /var/www/
     group: www-data
     owner: www-data
-    extra_opts:
-    - --transform
-    - s,^bundle,wekan,
+  when: wekan_dld is not skipped
+
+- name: Move bundle to correct location
+  become: yes
+  command: mv /var/www/bundle /var/www/wekan
   when: wekan_dld is not skipped
 
 - name: Install wekan

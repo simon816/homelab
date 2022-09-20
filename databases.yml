@@ -5,21 +5,21 @@
   - name: Ensure secondary disk configured
     become: yes
     parted:
-      device: /dev/disk/by-path/pci-0000:00:09.0
+      device: /dev/disk/by-path/pci-0000:02:00.0
       number: 1
       state: present
 
   - name: Ensure secondary disk filesystem
     become: yes
     filesystem:
-      dev: /dev/disk/by-path/pci-0000:00:09.0-part1
+      dev: /dev/disk/by-path/pci-0000:02:00.0-part1
       fstype: ext4
 
   - name: Mount secondary disk
     become: yes
     mount:
       fstype: ext4
-      src: /dev/disk/by-path/pci-0000:00:09.0-part1
+      src: /dev/disk/by-path/pci-0000:02:00.0-part1
       path: /srv
       state: mounted
 
@@ -39,7 +39,7 @@
               return
             fi
             mkdir "$destdir"
-            mysqldump -u root --single-transaction --add-drop-database --all-databases > "$destdir/databases.sql"
+            sudo -u mysql mysqldump -u root --single-transaction --add-drop-database --all-databases > "$destdir/databases.sql"
           postgres: |
             destdir="$basedir/$name"
             if [[ -d "$destdir" ]]
@@ -58,8 +58,22 @@
             fi
             mkdir "$destdir"
             mongodump --username=root --password=root --out="$destdir"
+        restore_scripts:
+          mariadb: |
+            destdir="$basedir/$name"
+            sudo -u mysql mysql < "$destdir/databases.sql"
+          postgres: |
+            destdir="$basedir/$name"
+            sudo -u postgres psql -f - postgres < "$destdir/databases.sql"
+          mongodb: |
+            destdir="$basedir/$name"
+            mongorestore --username=root --password=root "$destdir"
 
   tasks:
+  # in case there were configuration changes that are required for the below
+  - name: Restart databases now
+    meta: flush_handlers
+
   - name: Ensure nextcloud db
     become: yes
     mysql_db:
@@ -105,7 +119,7 @@
     when: xbrowsersync_db.changed
 
   - name: Init xbrowsersync db
-    command: mongo /tmp/xbrowsersync-init.js
+    command: mongosh -u root -p root /tmp/xbrowsersync-init.js
     when: xbrowsersync_db.changed
 
   - name: Ensure gitlab db

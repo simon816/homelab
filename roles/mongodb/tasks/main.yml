@@ -1,11 +1,36 @@
+- name: Ensure apt keys
+  become: yes
+  apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: "0x39BD841E4BE5FB195A65400E6A26B1AE64C3C388"
+
+- name: Ensure apt repositories
+  become: yes
+  apt_repository:
+    repo: "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse"
+
+- name: Install libssl1.1
+  become: yes
+  apt:
+    update_cache: yes
+    deb: "http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.16_amd64.deb"
+
 - name: Install DB packages
   become: yes
   apt:
+    update_cache: yes
     name: "{{ packages }}"
   vars:
     packages:
-    - mongodb-server
-    - python3-pymongo
+    - mongodb-org-server
+    - mongodb-database-tools
+    - mongodb-mongosh
+    - python3-pip
+
+- name: Install pymongo
+  become: yes
+  pip:
+    name: pymongo>=3.12
 
 - name: Ensure mongodb directory
   become: yes
@@ -20,10 +45,10 @@
     path: /var/lib/mongodb
   register: mongodb_data
 
-- name: Stop mongodb if first run
+- name: Stop mongod if first run
   become: yes
   service:
-    name: mongodb
+    name: mongod
     state: stopped
   when: not mongodb_data.stat.islnk
 
@@ -44,35 +69,54 @@
     owner: mongodb
     group: mongodb
 
-- name: Ensure mongodb started
+- name: Ensure mongod started
   become: yes
   service:
-    name: mongodb
+    name: mongod
     state: started
 
 - name: Configure mongodb IP
   become: yes
   lineinfile:
-    path: /etc/mongodb.conf
-    regexp: '^bind_ip = .+'
-    line: "bind_ip = 0.0.0.0"
+    path: /etc/mongod.conf
+    regexp: '  bindIp: .+'
+    line: "  bindIp: '0.0.0.0'"
   notify:
-    - restart mongodb
+    - restart mongod
 
-- name: Configure mongodb auth
+- name: Configure mongodb
   become: yes
-  lineinfile:
-    path: /etc/mongodb.conf
-    regexp: '^#?auth = .+'
-    line: 'auth = true'
+  blockinfile:
+    path: /etc/mongod.conf
+    block: |
+      security:
+        authorization: enabled
   notify:
-    - restart mongodb
+    - restart mongod
 
-- name: Ensure mongodb root user
+# First run - cannot use login_user as it doesn't exist yet
+- name: Bootstrap mongodb root user
   mongodb_user:
     database: admin
     name: root
     password: root
     roles: root
-  register: mongo_root_check
-  failed_when: false #"('rc' in mongo_root_check and mongo_root_check.rc != 0) or 'there are no users authenticated' not in mongo_root_check.stdout"
+  register: bootstrap_user
+  # fail if error message is not the expected message
+  failed_when: "'msg' in bootstrap_user and 'command createUser requires authentication' not in bootstrap_user.msg"
+
+- name: Ensure mongodb root user
+  mongodb_user:
+    login_user: root
+    login_password: root
+    database: admin
+    name: root
+    password: root
+    roles: root
+
+- name: Enable mongod service
+  become: yes
+  service:
+    name: mongod
+    enabled: yes
+    state: started

@@ -1,0 +1,15 @@
+# Add back config options missing from 10.1 -> 10.6 migration
+[client]
+default-character-set = utf8mb4
+[mysql]
+default-character-set = utf8mb4
+
+[mysqld]
+bind-address = {{ inventory_hostname }}
+
+# For Nextcloud
+# https://docs.nextcloud.com/server/24/admin_manual/configuration_database/mysql_4byte_support.html
+innodb_file_per_table=1
+
+# Prevent delays when not connected to the internet
+skip_name_resolve=true

@@ -1,6 +1,7 @@
 - name: Install DB packages
   become: yes
   apt:
+    update_cache: yes
     name: "{{ packages }}"
   vars:
     packages:
@@ -46,13 +47,14 @@
 
 - name: Setup initial mariadb data
   become: yes
+  become_user: mysql
   command: mysql_install_db
   when: not mariadb_data.stat.islnk
 
 - name: Copy mariadb configuration
   become: yes
-  copy:
-    src: config.cnf
+  template:
+    src: config.cnf.j2
     dest: /etc/mysql/mariadb.conf.d/60-dbserver.cnf
   notify:
     - restart mariadb

@@ -1,4 +1,13 @@
 network:
   ethernets:
-    ens9:
+    # intnet
+    enp1s0:
       dhcp4: yes
+      dhcp-identifier: mac
+    # external
+    enp2s0:
+      dhcp4: yes
+      dhcp-identifier: mac
+  renderer: networkd
+  version: 2
+

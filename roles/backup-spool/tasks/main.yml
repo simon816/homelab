@@ -1,3 +1,9 @@
+- name: Install rsync
+  become: yes
+  apt:
+    update_cache: yes
+    name: rsync
+
 - name: Ensure backup spool directory
   become: yes
   file:
@@ -24,3 +30,12 @@
     hour: '22'
     job: /usr/local/bin/run-spool-backup
     user: ansible
+
+- name: Ensure restore script
+  become: yes
+  template:
+    src: restore-backup.j2
+    dest: /usr/local/bin/restore-backup
+    owner: ansible
+    group: ansible
+    mode: 0700

@@ -1,0 +1,2 @@
+#!/bin/sh
+sudo sieve-filter -e -W -u simon /home/simon/.dovecot.sieve "$1"

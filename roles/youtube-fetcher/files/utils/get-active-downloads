@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+while :
+do
+	list='""'
+	for id in $(ps aux | grep -- -dl | grep -o "?v=.*" | cut -d'=' -f2)
+	do
+		list="$list,'$id'"
+	done
+	sqlite3 -column /srv/YouTube/youtube.db "select c.title, strftime('%Y-%m-%d', v.published_at), v.video_id, v.title from channel_video v join channels c on c.id = ch_id where video_id in ($list) order by 1, 2"
+	echo ---------
+	sleep 5
+done
