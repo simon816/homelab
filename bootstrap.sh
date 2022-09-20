@@ -64,8 +64,8 @@ then
     aux_disk db-data 5G
     create_disk cloud 6G
     create_disk sinkhole 6G
-    create_disk mail2
-    aux_disk mail-data2 10G
+    create_disk mail
+    aux_disk mail-data 10G
     exit
 fi
 
