@@ -1,6 +1,7 @@
 [Unit]
 Description=Jackett Daemon
 After=network.target
+RequiresMountsFor=/srv
 
 [Service]
 ExecStart=/bin/sh "/opt/Jackett/jackett_launcher.sh"

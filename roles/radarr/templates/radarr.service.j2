@@ -1,6 +1,7 @@
 [Unit]
 Description=Radarr Daemon
 After=network.target
+RequiresMountsFor=/srv
 
 [Service]
 ExecStart=/opt/Radarr/Radarr -nobrowser

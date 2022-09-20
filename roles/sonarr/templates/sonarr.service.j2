@@ -1,6 +1,7 @@
 [Unit]
 Description=Sonarr Daemon
 After=network.target
+RequiresMountsFor=/srv
 
 [Service]
 ExecStart=/usr/bin/env mono /usr/lib/sonarr/bin/Sonarr.exe -nobrowser
