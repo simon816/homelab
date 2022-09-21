@@ -133,10 +133,8 @@ mv .ssh/ansible_rsa.pub .ssh/id_rsa.pub
 rm -rf homelab
 git clone simon@192.168.122.1:~/code/Lab/homelab
 mkdir homelab/certs
-mkdir homelab/vpn-config
 sudo apt-add-repository --yes --update ppa:ansible/ansible
 sudo apt install --yes ansible
 EOF
 
 scp -i ~/.ssh/ansible_rsa ~/code/Lab/private/certs/* "ansible@$ip:~/homelab/certs"
-scp -i ~/.ssh/ansible_rsa ~/code/Lab/private/vpn-config/* "ansible@$ip:~/homelab/vpn-config"
