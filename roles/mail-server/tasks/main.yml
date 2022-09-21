@@ -21,19 +21,21 @@
 - name: Copy postfix configuration
   become: yes
   copy:
-    src: postfix/
+    src: postfix-etc/
     dest: /etc/postfix/
   notify:
     - reload postfix
 
 - name: Copy postfix posteo auth
   become: yes
-  copy:
-    src: mail-keys/postfix-password
+  template:
+    src: postfix/password.j2
     dest: /etc/postfix/password
     owner: root
     group: root
     mode: 0600
+  vars:
+    posteo_password: "{{ lookup('unvault', 'posteo_password') }}"
 
 - name: postfix mailname
   become: yes
@@ -71,7 +73,7 @@
 - name: Copy gateway client cert
   become: yes
   copy:
-    src: mail-keys/mxgateway.simon816.com.cert.pem
+    src: postfix/mxgateway.simon816.com.cert.pem
     dest: /etc/ssl/mail/mxgateway.simon816.com.cert.pem
   notify:
     - reload postfix
@@ -90,7 +92,7 @@
 - name: Copy posteo password
   become: yes
   copy:
-    src: mail-keys/posteo_password
+    src: posteo_password
     dest: /etc/dovecot/posteo_password
     owner: root
     group: root
@@ -109,7 +111,7 @@
 - name: Copy dovecot auth
   become: yes
   copy:
-    src: mail-keys/dovecot-passwd
+    src: dovecot/passwd
     dest: /etc/dovecot/passwd
     owner: dovecot
     group: dovecot
@@ -195,7 +197,7 @@
 - name: opendkim key
   become: yes
   copy:
-    src: mail-keys/simon816.com-dkim.key
+    src: opendkim/simon816.com-dkim.key
     dest: /etc/dkimkeys/simon816.com-dkim.key
     owner: opendkim
     group: opendkim
