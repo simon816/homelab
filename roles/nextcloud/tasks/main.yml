@@ -145,7 +145,7 @@
 - name: Ensure Nextcloud cron
   become: yes
   cron:
-    minute: "*/15"
+    minute: "*/5"
     name: nextcloud_cron
     user: www-data
     job: php -f /var/www/nextcloud/cron.php
