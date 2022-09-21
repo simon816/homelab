@@ -19,24 +19,12 @@ db:
     port: 27017
     user: xbrowsersyncdb
     pass: xbrowsersync
-  gitlab:
-    name: gitlab
-    host: 10.80.0.5
-    port: 5432
-    user: gitlab
-    pass: gitlab
   ore:
     name: ore
     host: 10.80.0.5
     port: 5432
     user: oreuser
     pass: oredbpass
-  pleroma:
-    name: pleroma
-    host: 10.80.0.5
-    port: 5432
-    user: pleroma
-    pass: pleroma
   ttrss:
     name: ttrss
     host: 10.80.0.5

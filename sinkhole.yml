@@ -46,7 +46,6 @@
     - radarr
     - jackett
     - deluge
-    #- sabnzbplus
     - nginx
     - youtube-fetcher
     - role: backup-spool

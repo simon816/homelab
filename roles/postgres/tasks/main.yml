@@ -76,9 +76,7 @@
   blockinfile:
     path: /etc/postgresql/{{ major_version }}/main/pg_hba.conf
     block: |
-        host {{ db.gitlab.name }} {{ db.gitlab.user }} 10.80.0.7/32 md5
         host {{ db.ore.name }} {{ db.ore.user }} 10.80.0.1/32 md5
-        host {{ db.pleroma.name }} {{ db.pleroma.user }} 10.80.0.4/32 md5
   notify:
     - restart postgres
 

@@ -122,29 +122,6 @@
     command: mongosh -u root -p root /tmp/xbrowsersync-init.js
     when: xbrowsersync_db.changed
 
-  - name: Ensure gitlab db
-    become: yes
-    become_user: postgres
-    postgresql_db:
-      login_unix_socket: /var/run/postgresql/
-      name: "{{ db.gitlab.name }}"
-
-  - name: Ensure gitlab extensions
-    become: yes
-    become_user: postgres
-    postgresql_ext:
-      login_unix_socket: /var/run/postgresql/
-      name: pg_trgm
-      db: "{{ db.gitlab.name }}"
-
-  - name: Ensure gitlab user
-    become: yes
-    become_user: postgres
-    postgresql_user:
-      login_unix_socket: /var/run/postgresql/
-      name: "{{ db.gitlab.user }}"
-      password: "{{ db.gitlab.pass }}"
-
   - name: Ensure Ore db
     become: yes
     become_user: postgres
@@ -159,21 +136,6 @@
       login_unix_socket: /var/run/postgresql/
       name: "{{ db.ore.user }}"
       password: "{{ db.ore.pass }}"
-
-  - name: Ensure Pleroma db
-    become: yes
-    become_user: postgres
-    postgresql_db:
-      login_unix_socket: /var/run/postgresql/
-      name: "{{ db.pleroma.name }}"
-
-  - name: Ensure Pleroma user
-    become: yes
-    become_user: postgres
-    postgresql_user:
-      login_unix_socket: /var/run/postgresql/
-      name: "{{ db.pleroma.name }}"
-      password: "{{ db.pleroma.pass }}"
 
   - name: Ensure ttrss db
     become: yes

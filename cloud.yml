@@ -39,14 +39,11 @@
     - nextcloud
     - xbrowsersync
     - wekan
-    #- pleroma
     - ttrss
     - rss-bridge
     - role: backup-spool
       vars:
         backup_paths:
-          pleroma_config: /var/www/pleroma/config/
-          pleroma_uploads: /var/www/pleroma/uploads/
           ttrss_icons: /var/www/ttrss/feed-icons/
         backup_scripts:
           nextcloud: |

@@ -10,4 +10,3 @@ network:
       dhcp-identifier: mac
   renderer: networkd
   version: 2
-
