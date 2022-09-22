@@ -38,6 +38,17 @@
     group: git
     mode: 0750
 
+- name: Ensure config file
+  become: yes
+  template:
+    src: app.ini.j2
+    dest: /etc/gitea/app.ini
+    owner: git
+    group: git
+    mode: 0640
+  notify:
+    - restart gitea service
+
 - name: Configure gitea service
   become: yes
   copy:
