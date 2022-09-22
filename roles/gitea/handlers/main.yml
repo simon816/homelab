@@ -1,5 +1,6 @@
 - name: restart gitea service
   become: yes
-  service:
+  systemd:
+    daemon_reload: yes
     name: gitea
     state: restarted

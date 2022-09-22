@@ -11,3 +11,6 @@
   roles:
     - intnet-node
     - gitea
+    - role: nginx
+      vars:
+        site: dev

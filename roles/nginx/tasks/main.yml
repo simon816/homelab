@@ -49,8 +49,8 @@
 - name: Configure nginx
   become: yes
   copy:
-    src: nginx.sinkhole.conf
-    dest: /etc/nginx/sites-enabled/sinkhole-sites
+    src: "nginx.{{ site }}.conf"
+    dest: "/etc/nginx/sites-enabled/{{ site }}.conf"
   notify:
     - restart nginx
 

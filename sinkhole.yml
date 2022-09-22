@@ -46,7 +46,9 @@
     - radarr
     - jackett
     - deluge
-    - nginx
+    - role: nginx
+      vars:
+        site: sinkhole
     - youtube-fetcher
     - role: backup-spool
       vars:
