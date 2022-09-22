@@ -29,6 +29,7 @@
       - cloud
       - sinkhole
       - mail
+      - dev
 
   - name: Ensure machines are running
     virt:
@@ -40,3 +41,4 @@
       - cloud
       - sinkhole
       - mail
+      - dev

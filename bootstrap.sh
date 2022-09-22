@@ -66,6 +66,7 @@ then
     create_disk sinkhole 6G
     create_disk mail
     aux_disk mail-data 10G
+    create_disk dev
     exit
 fi
 

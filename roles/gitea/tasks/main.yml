@@ -1,0 +1,54 @@
+- name: Install packages
+  become: yes
+  apt:
+    update_cache: yes
+    name: "{{ packages }}"
+  vars:
+    packages:
+      - git
+
+- name: Download gitea
+  become: yes
+  get_url:
+    url: "https://dl.gitea.io/gitea/1.17.2/gitea-1.17.2-linux-amd64"
+    checksum: "sha256:d0e903671ae04007c5956beb65985825795c1d9b24c9f354b48008fd44db1b57"
+    dest: /usr/local/bin/gitea
+    mode: 0755
+
+- name: Create data directories
+  become: yes
+  file:
+    path: "/var/lib/gitea/{{ item }}"
+    state: directory
+    owner: git
+    group: git
+    mode: 0750
+  loop:
+    - ""
+    - custom
+    - data
+    - log
+
+- name: Ensure config directory
+  become: yes
+  file:
+    path: /etc/gitea
+    state: directory
+    owner: root
+    group: git
+    mode: 0750
+
+- name: Configure gitea service
+  become: yes
+  copy:
+    src: gitea.service
+    dest: /etc/systemd/system/gitea.service
+  notify:
+    restart gitea service
+
+- name: Enable gitea service
+  become: yes
+  service:
+    name: gitea
+    enabled: yes
+    state: started

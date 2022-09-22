@@ -1,0 +1,13 @@
+---
+- hosts: dev
+
+  pre_tasks:
+  - name: git user
+    become: yes
+    user:
+      name: git
+      password_lock: yes
+
+  roles:
+    - intnet-node
+    - gitea
