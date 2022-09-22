@@ -156,3 +156,22 @@
       host: 10.80.0.4
       state: present
 
+  - name: Ensure gitea db
+    become: yes
+    mysql_db:
+      login_unix_socket: /var/run/mysqld/mysqld.sock
+      name: "{{ db.gitea.name }}"
+      collation: utf8mb4_general_ci
+      encoding: utf8mb4
+      state: present
+
+  - name: Ensure gitea user
+    become: yes
+    mysql_user:
+      login_unix_socket: /var/run/mysqld/mysqld.sock
+      name: "{{ db.gitea.user }}"
+      password: "{{ db.gitea.pass }}"
+      priv: "{{ db.gitea.name }}.*:ALL"
+      host: 10.80.0.7
+      state: present
+
