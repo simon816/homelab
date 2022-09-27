@@ -1,24 +1,25 @@
 {
-    "db": {
-        "host": "{{ db.xbrowsersync.host }}",
-        "name": "{{ db.xbrowsersync.name }}",
-        "username": "{{ db.xbrowsersync.user }}",
-        "password": "{{ db.xbrowsersync.pass }}",
-        "port": "{{ db.xbrowsersync.port }}"
-    },
-    "server": {
-        "behindProxy": true,
-        "port": 8002
-    },
-    "log": {
-        "file": {
-            "enabled": false
-        }
-    },
-    "throttle": {
-        "timeWindow": 5000,
-        "maxRequests": 0
-    },
-    "maxSyncs": 0,
-    "maxSyncSize": 10240000
+  "db": {
+    "authSource": "{{ db.xbrowsersync.name }}",
+    "host": "{{ db.xbrowsersync.host }}",
+    "name": "{{ db.xbrowsersync.name }}",
+    "username": "{{ db.xbrowsersync.user }}",
+    "password": "{{ db.xbrowsersync.pass }}",
+    "port": "{{ db.xbrowsersync.port }}"
+  },
+  "log": {
+    "file": {
+      "enabled": false
+    }
+  },
+  "maxSyncs": 0,
+  "maxSyncSize": 10240000,
+  "server": {
+    "behindProxy": true,
+    "port": 8002
+  },
+  "throttle": {
+    "maxRequests": 0,
+    "timeWindow": 5000
+  }
 }
