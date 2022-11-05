@@ -9,6 +9,7 @@ User=sinkhole
 Group=sinkhole
 Restart=always
 RestartSec=10
+WatchdogSec=60
 StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier=youtube-metadata
