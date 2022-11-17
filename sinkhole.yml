@@ -41,6 +41,22 @@
       path: /srv
       state: mounted
 
+  - name: Ensure sinkhole LFS mount point
+    become: yes
+    file:
+      path: /media/lfs
+      state: directory
+      owner: sinkhole
+      group: sinkhole
+
+  - name: Mount sinkhole NFS large file store
+    become: yes
+    mount:
+      fstype: nfs
+      src: "10.80.0.1:/media/md/sinkhole"
+      path: /media/lfs
+      state: mounted
+
   roles:
     - sonarr
     - radarr
