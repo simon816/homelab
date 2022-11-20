@@ -1,10 +1,16 @@
 import re
-from subprocess import check_output
+from subprocess import check_output, CalledProcessError
 import shlex
 
 def doveadm(*args):
     print(' '.join(shlex.quote(a.decode('utf8') if type(a) is bytes else str(a)) for a in args))
-    return check_output(['doveadm'] + list(args))
+    try:
+      return check_output(['doveadm'] + list(args))
+    except CalledProcessError as e:
+      if e.returncode == 75:
+          print("Ignore exit code 75")
+          return e.output
+      raise
 
 def fetch(fields, search):
     result = doveadm('fetch', '-u', 'simon', fields, *search)
