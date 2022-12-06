@@ -1,0 +1,95 @@
+#!/usr/bin/env python3
+
+import os
+import shutil
+import sys
+from subprocess import CalledProcessError
+import zipfile
+sys.path.append('/etc/dovecot/sync')
+import doveadm
+from envelope_reader import EnvelopeReader
+
+exists = True
+try:
+    status = doveadm.doveadm('mailbox', 'status', '-u', 'simon', 'messages', 'Gmail.Imported')
+except CalledProcessError as e:
+    if e.returncode == 68:
+        exists = False
+    else:
+        raise e
+
+if not exists:
+    try:
+        os.mkdir('/home/gmail')
+    except FileExistsError:
+        pass
+
+    with zipfile.ZipFile(sys.argv[1]) as z:
+        z.extract('Takeout/Mail/All mail Including Spam and Trash.mbox', '/home/gmail')
+
+    os.rename('/home/gmail/Takeout/Mail/All mail Including Spam and Trash.mbox', '/home/gmail/Imported')
+    shutil.chown('/home/gmail', 'simon', 'simon')
+    shutil.chown('/home/gmail/Imported', 'simon', 'simon')
+
+    doveadm.doveadm('import', '-u', 'simon', 'mbox:/home/gmail', 'Gmail', 'mailbox', 'Imported')
+
+    shutil.rmtree('/home/gmail')
+
+r = EnvelopeReader()
+
+gmail_messages = {}
+sent_emails = []
+for mail in doveadm.fetch('uid imap.envelope hdr.x-gmail-labels', ('mailbox', 'Gmail.Imported')):
+    labels = set(mail['hdr.x-gmail-labels'].decode('utf8').split(','))
+    if 'Sent' in labels:
+        sent_emails.append(mail['uid'])
+    else:
+        env = r.read_envelope(mail['imap.envelope'])
+        key = env.message_id + b'\0' + env.date.isoformat().encode('utf8')
+        gmail_messages[key] = mail['uid']
+
+mark_as_read = []
+move_to_inbox = []
+del_from_gmail = []
+
+for mail in doveadm.fetch('uid flags imap.envelope', ('mailbox', 'Gmail')):
+    env = r.read_envelope(mail['imap.envelope'])
+    key = env.message_id + b'\0' + env.date.isoformat().encode('utf8')
+    # If we found a match, move the imported message to inbox and delete our forwarded copy
+    if key in gmail_messages:
+        if '\\Seen' in set(mail['flags'].decode('utf8').split(' ')):
+            mark_as_read.append(gmail_messages[key])
+        move_to_inbox.append(gmail_messages[key])
+        del_from_gmail.append(mail['uid'])
+        # shouldn't be needed but ensure we only do this action once
+        del gmail_messages[key]
+    # If no match, do nothing
+
+# For any unmatched imported emails, we'll leave in the "Imported" mailbox for manual investigation
+
+def create_mb_search(mailbox, uidlist):
+    search = ['mailbox', mailbox]
+    search.extend(doveadm.search_or(*(['uid', uid] for uid in uidlist)))
+    return search
+
+if mark_as_read:
+    print("Marking", len(mark_as_read), "messages as read")
+    doveadm.set_flags('\\Seen', create_mb_search('Gmail.Imported', mark_as_read))
+
+if move_to_inbox:
+    print("Moving", len(move_to_inbox), "messages to INBOX")
+    doveadm.move('INBOX', create_mb_search('Gmail.Imported', move_to_inbox))
+
+if sent_emails:
+    print("Moving", len(sent_emails), "messages to Sent.Gmail")
+    doveadm.move('Sent.Gmail', create_mb_search('Gmail.Imported', sent_emails))
+
+if del_from_gmail:
+    print("Deleting", len(del_from_gmail), "messages from Gmail")
+    doveadm.delete(create_mb_search('Gmail', del_from_gmail))
+
+if gmail_messages:
+    print(len(gmail_messages), "messages remain in Gmail.Imported")
+
+print("Done")
+print("You may want to run `./filter INBOX` now")
