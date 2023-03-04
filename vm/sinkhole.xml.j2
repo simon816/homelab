@@ -2,3 +2,11 @@
 {% set vm_name = "sinkhole" %}
 {% set vm_mem = 4096 * 1024 %}
 {% set intnet_mac = "52:54:00:4f:5f:e9" %}
+{% block devices %}
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2'/>
+      <source file='/data/Virtualization/VHDs/sinkhole-tmp.qcow2' index='2'/>
+      <target dev='vdb' bus='virtio'/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x00' function='0x0'/>
+    </disk>
+{% endblock %}
