@@ -3,6 +3,7 @@
 CLOUDIMG="/data/Virtualization/IMG/ubuntu-22.04-minimal-cloudimg-amd64.img"
 
 IMGDIR="/var/lib/libvirt/images"
+MISCIMGDIR="/data/Virtualization/VHDs"
 
 INITIMG="lab-base.qcow2"
 
@@ -57,6 +58,16 @@ aux_disk() {
     fi
 }
 
+misc_disk() {
+    file="$MISCIMGDIR/$1.qcow2"
+    if [ ! -e "$file" ]
+    then
+        echo Creating disk $file
+        sudo qemu-img create -f qcow2 "$file" $2
+        sudo chown libvirt-qemu:kvm "$file"
+    fi
+}
+
 if [ "$1" == "disks" ]
 then
     create_disk gateway
@@ -64,6 +75,7 @@ then
     aux_disk db-data 5G
     create_disk cloud 6G
     create_disk sinkhole 6G
+    misc_disk sinkhole-tmp 10G
     create_disk mail
     aux_disk mail-data 10G
     create_disk dev
