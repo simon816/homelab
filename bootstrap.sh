@@ -3,7 +3,7 @@
 CLOUDIMG="/data/Virtualization/IMG/ubuntu-22.04-minimal-cloudimg-amd64.img"
 
 IMGDIR="/var/lib/libvirt/images"
-MISCIMGDIR="/data/Virtualization/VHDs"
+MISCIMGDIR="/media/md/VMStorage"
 
 INITIMG="lab-base.qcow2"
 
