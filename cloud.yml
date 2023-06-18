@@ -44,7 +44,7 @@
     - role: backup-spool
       vars:
         backup_paths:
-          ttrss_icons: /var/www/ttrss/feed-icons/
+          ttrss_icons: /var/www/ttrss/cache/feed-icons/
         backup_scripts:
           nextcloud: |
             sudo -u www-data php /var/www/nextcloud/occ maintenance:mode --on
