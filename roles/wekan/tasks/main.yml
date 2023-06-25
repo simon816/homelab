@@ -58,6 +58,13 @@
     global: yes
     production: yes
 
+- name: Wekan updater script
+  become: yes
+  copy:
+    src: update-wekan.sh
+    dest: /usr/local/bin/update-wekan
+    mode: 0755
+
 - name: Configure wekan service
   become: yes
   template:
