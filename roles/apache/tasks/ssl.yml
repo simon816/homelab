@@ -54,11 +54,12 @@
   notify:
     - restart apache
 
-- name: Enable SSL
+# For some reason this causes rss-bridge to not work
+- name: Disable default SSL virtualhost
   become: yes
-  command: a2ensite 10-simon816-ssl
+  command: a2dissite 10-simon816-ssl
   args:
-    creates: /etc/apache2/sites-enabled/10-simon816-ssl.conf
+    removes: /etc/apache2/sites-enabled/10-simon816-ssl.conf
   notify:
     - restart apache
 
