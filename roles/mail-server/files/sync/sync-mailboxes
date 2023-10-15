@@ -18,7 +18,7 @@ INCOMING_IMPORT = 'INBOX'
 # Mailbox for a copy of recent mail
 REMOTE_RECENT = 'Incoming.Recent'
 # Filter to identify emails delivered to remote
-REMOTE_DELIVERED = ('header', 'Delivered-To', 'simon816@posteo.net')
+REMOTE_DELIVERED = ('(', 'header', 'Delivered-To', 'simon816@posteo.net', 'OR', '(', 'header', 'Delivered-To', '@posteo.net', 'header', 'Delivered-To', 'simon816+', ')', ')')
 # Do not sync these mailboxes to remote
 IGNORE_LOCAL = ('Junk',)
 IGNORE_WILDCARD = ('Archive',)
@@ -222,7 +222,7 @@ def sync_incoming(r):
     for mail in mails:
         uid = mail['uid']
         env = r.read_envelope(mail['imap.envelope'])
-        search = doveadm.search(['header', 'Message-ID', env.message_id, 'not', *REMOTE_DELIVERED])
+        search = doveadm.search(['header', 'Message-ID', env.message_id, 'not', '(', *REMOTE_DELIVERED, ')'])
         if len(list(search)):
             print("[%s] %s already exists, removing from inbox" % (uid, env.message_id))
             # Another email exists with this message ID, delete from local
