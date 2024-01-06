@@ -23,7 +23,7 @@ REMOTE_DELIVERED = ('(', 'header', 'Delivered-To', 'simon816@posteo.net', 'OR', 
 IGNORE_LOCAL = ('Junk',)
 IGNORE_WILDCARD = ('Archive',)
 # Do not delete these remote mailboxes
-IGNORE_REMOTE = (*IGNORE_LOCAL, INCOMING_REMOTE, REMOTE_RECENT)
+IGNORE_REMOTE = (*IGNORE_LOCAL, INCOMING_REMOTE, REMOTE_RECENT, 'Spam-Log')
 # Ignore changes to these flags
 IGNORE_FLAGS = set(('\\Recent',))
 # Apply changes to this many mails at a time
