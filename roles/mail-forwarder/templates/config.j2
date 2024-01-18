@@ -1,0 +1,18 @@
+defaults
+syslog on
+port 587
+domain %H
+from %U@%H
+auth           on
+tls            on
+tls_trust_file /etc/ssl/certs/ca-certificates.crt
+tls on
+tls_starttls on
+aliases /etc/aliases
+
+account mailserver
+host mail.simon816.com
+user msmtp
+password {{ mail_password }}
+
+account default: mailserver

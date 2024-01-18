@@ -1,8 +1,7 @@
 ---
 - hosts: controller
-#  roles:
-#    - intnet-node
-  tasks:
+
+  pre_tasks:
     - name: Configure intnet netplan
       become: yes
       copy:
@@ -27,7 +26,19 @@
         owner: ansible
         group: ansible
 
+    - name: Set hostname
+      become: yes
+      hostname:
+        name: controller.simon816.com
+
+    - name: Apply handlers
+      meta: flush_handlers
+
   handlers:
     - name: apply netplan
       become: yes
       command: netplan apply
+
+  roles:
+    - mail-forwarder
+#    - intnet-node

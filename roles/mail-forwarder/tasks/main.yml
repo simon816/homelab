@@ -1,0 +1,22 @@
+- name: Install packages
+  become: yes
+  apt:
+    update_cache: yes
+    name: "{{ packages }}"
+  vars:
+    packages:
+    - msmtp-mta
+
+- name: msmtp config
+  become: yes
+  template:
+    src: config.j2
+    dest: /etc/msmtprc
+
+# Might not need this if we allow non-fqdn in submission
+- name: root alias
+  become: yes
+  lineinfile:
+    path: /etc/aliases
+    line: "root: me@simon816.com"
+    regex: "^root:"
