@@ -1,0 +1,129 @@
+- name: Ensure apt keys
+  become: yes
+  get_url:
+    url: "https://build.opensuse.org/projects/home:naemon/signing_keys/download?kind=gpg"
+    dest: /etc/apt/trusted.gpg.d/naemon.asc
+    checksum: sha256:ed9a1106952957cc990c5a42287f82693c6982b3bad434c115dadf33ba5031a4
+
+- name: Ensure apt repositories
+  become: yes
+  apt_repository:
+    repo: "deb [signed-by=/etc/apt/trusted.gpg.d/naemon.asc] http://download.opensuse.org/repositories/home:/naemon/xUbuntu_22.04/ ./"
+
+- name: Install naemon
+  become: yes
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+      - naemon-core
+      - naemon-livestatus
+      - naemon-thruk
+      - nsca
+
+- name: Configure naemon apache
+  become: yes
+  copy:
+    src: naemon.conf
+    dest: /etc/apache2/sites-available/naemon.conf
+  notify:
+    - restart apache
+
+- name: Enable naemon web interface
+  become: yes
+  command: a2ensite naemon
+  args:
+    creates: /etc/apache2/sites-enabled/naemon.conf
+  notify:
+    - restart apache
+
+- name: Configure nsca daemon
+  become: yes
+  template:
+    src: nsca.cfg.j2
+    dest: /etc/nsca.cfg
+    owner: root
+    group: naemon
+    mode: 0640
+  notify:
+    restart nsca
+
+- name: nsca drop-in directory
+  become: yes
+  file:
+    path: /etc/systemd/system/nsca.service.d/
+    state: directory
+
+- name: nsca set user to naemon
+  become: yes
+  copy:
+    dest: /etc/systemd/system/nsca.service.d/naemon-user.conf
+    content: |
+      [Service]
+      User=naemon
+      Group=naemon
+      PIDFile=/run/naemon/nsca.pid
+      ExecStopPost=/bin/rm -f /run/naemon/nsca.pid
+  notify:
+    restart nsca
+
+- name: nsca tmpfiles user naemon
+  become: yes
+  copy:
+    dest: /etc/tmpfiles.d/nsca.conf
+    content: |
+        #Type	Path		Mode	UID	GID	Age	Argument
+        d	/run/naemon	0755	naemon	naemon	-	-
+
+- name: Naemon global config
+  become: yes
+  lineinfile:
+    path: /etc/naemon/naemon.cfg
+    line: "{{ item.key }}={{ item.value }}"
+    regex: "^#?{{ item.key | regex_escape }}="
+  loop: "{{ config | dict2items }}"
+  vars:
+    config:
+      check_external_commands: 1
+      enable_notifications: 1
+      execute_service_checks: 0
+      accept_passive_service_checks: 1
+      date_format: iso8601
+  notify:
+    - reload naemon
+
+- name: Clear example files
+  become: yes
+  file:
+    path: "/etc/naemon/conf.d/{{ item }}.cfg"
+    state: absent
+  loop: "{{ files }}"
+  vars:
+    files:
+      - printer
+      - switch
+      - windows
+  notify:
+    - reload naemon
+
+- name: Naemon object definitions
+  become: yes
+  copy:
+    src: conf.d/
+    dest: /etc/naemon/conf.d/
+  notify:
+    - reload naemon
+
+- name: Enable nsca service
+  become: yes
+  service:
+    name: nsca
+    enabled: yes
+    state: started
+
+- name: Enable naemon service
+  become: yes
+  service:
+    name: naemon
+    enabled: yes
+    state: started

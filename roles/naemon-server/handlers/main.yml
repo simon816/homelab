@@ -1,0 +1,12 @@
+- name: restart nsca
+  become: yes
+  systemd:
+    name: nsca
+    state: restarted
+    daemon_reload: yes
+
+- name: reload naemon
+  become: yes
+  service:
+    name: naemon
+    state: reloaded

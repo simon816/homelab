@@ -34,7 +34,7 @@
   become: yes
   command: a2enconf ssl-common
   args:
-    creates: /etc/apache2/config-enabled/ssl-common.conf
+    creates: /etc/apache2/conf-enabled/ssl-common.conf
   notify:
     - restart apache
 

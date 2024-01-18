@@ -35,7 +35,7 @@
   become: yes
   command: a2enconf common-headers
   args:
-    creates: /etc/apache2/config-enabled/common-headers.conf
+    creates: /etc/apache2/conf-enabled/common-headers.conf
   notify:
     - restart apache
 
