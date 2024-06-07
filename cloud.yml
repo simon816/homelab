@@ -27,12 +27,16 @@
       name: nfs-common
 
   tasks:
-  - name: rss-bridge hosts
+  - name: hosts file self mapping
     become: yes
     lineinfile:
       path: /etc/hosts
-      line: "{{ inventory_hostname }} rss-bridge.simon816.com"
-      search_string: "rss-bridge.simon816.com"
+      line: "{{ inventory_hostname }} {{ item }}"
+      search_string: "{{ item }}"
+    loop:
+      - rss-bridge.simon816.com
+      - ical-bridge.simon816.com
+      - nextcloud.simon816.com
 
   roles:
     - apache
