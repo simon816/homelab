@@ -39,6 +39,7 @@
       - nextcloud.simon816.com
 
   roles:
+    - naemon-remote
     - apache
     - nextcloud
     - xbrowsersync

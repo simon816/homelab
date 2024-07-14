@@ -1,0 +1,41 @@
+- hosts: lab_servers
+  gather_facts: yes
+
+- hosts: controller
+  tasks:
+    - name: Create known hosts file
+      become: yes
+      copy:
+        content: ""
+        dest: /var/lib/naemon/.ssh/known_hosts
+        owner: naemon
+        group: naemon
+        force: no
+
+    - name: Known hosts for all machines
+      become: yes
+      known_hosts:
+        path: /var/lib/naemon/.ssh/known_hosts
+        name: "{{ item }}"
+        key: "{{ hostvars[item]['ansible_facts']['all_ipv4_addresses'] | join(',') }} {{ hostvars[item]['ansible_facts']['ssh_host_key_ed25519_public_keytype'] }} {{ hostvars[item]['ansible_facts']['ssh_host_key_ed25519_public'] }}"
+      loop: "{{ groups['lab_servers'] }}"
+
+    - name: Monitoring user ssh key
+      become: yes
+      openssh_keypair:
+        path: /var/lib/naemon/.ssh/id_ed25519
+        owner: naemon
+        group: naemon
+        comment: "monitoring@{{ ansible_facts['hostname'] }}"
+        type: ed25519
+      register: monitoring_ssh_key
+
+- hosts:
+    - cloud
+  tasks:
+    - name: Ensure monitoring authorized key
+      become: yes
+      authorized_key:
+        user: naemon
+        key: "{{ hostvars[groups['controller'][0]]['monitoring_ssh_key']['public_key'] }}"
+        key_options: "from=\"{{ hostvars[groups['controller'][0]]['ansible_facts']['all_ipv4_addresses'] | join(',') }}\""

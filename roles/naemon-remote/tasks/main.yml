@@ -1,0 +1,27 @@
+- name: Install monitoring plugins
+  become: yes
+  apt:
+    name: monitoring-plugins-basic
+
+- name: Monitoring user group
+  become: yes
+  group:
+    name: naemon
+    system: yes
+
+- name: Monitoring user
+  become: yes
+  user:
+    name: naemon
+    group: naemon
+    system: yes
+    password_lock: yes
+    home: /home/monitoring
+    shell: /usr/bin/rbash
+
+- name: naemon nagios plugin PATH
+  become: yes
+  lineinfile:
+    path: /etc/environment
+    regex: "^PATH="
+    line: "PATH=\"/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/lib/nagios/plugins\""

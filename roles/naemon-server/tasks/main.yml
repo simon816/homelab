@@ -21,6 +21,15 @@
       - naemon-thruk
       - nsca
 
+- name: Ensure ssh directory for monitoring user
+  become: yes
+  file:
+    path: /var/lib/naemon/.ssh
+    state: directory
+    mode: 0700
+    owner: naemon
+    group: naemon
+
 - name: Configure naemon apache
   become: yes
   copy:
@@ -86,7 +95,7 @@
     config:
       check_external_commands: 1
       enable_notifications: 1
-      execute_service_checks: 0
+      execute_service_checks: 1
       accept_passive_service_checks: 1
       date_format: iso8601
   notify:

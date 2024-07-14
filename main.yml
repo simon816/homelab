@@ -5,3 +5,4 @@
 - import_playbook: sinkhole.yml
 - import_playbook: controller.yml
 - import_playbook: mail.yml
+- import_playbook: monitoring.yml
