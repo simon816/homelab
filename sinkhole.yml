@@ -79,6 +79,7 @@
       state: mounted
 
   roles:
+    - naemon-remote
     - sonarr
     - radarr
     - jackett

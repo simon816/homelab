@@ -25,6 +25,7 @@
 
   roles:
     - intnet-node
+    - naemon-remote
     - mariadb
     - mongodb
     - postgres

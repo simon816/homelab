@@ -10,6 +10,7 @@
 
   roles:
     - intnet-node
+    - naemon-remote
     - gitea
     - role: nginx
       vars:

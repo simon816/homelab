@@ -32,6 +32,11 @@
 
 - hosts:
     - cloud
+    - sinkhole
+    - mail
+    - dbserver
+    - dev
+    - gateway
   tasks:
     - name: Ensure monitoring authorized key
       become: yes

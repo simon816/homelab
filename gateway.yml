@@ -3,3 +3,4 @@
   roles:
     - gateway
     - bind9
+    - naemon-remote
