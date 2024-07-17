@@ -13,7 +13,7 @@
   become: yes
   apt:
     update_cache: yes
-    deb: "http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.16_amd64.deb"
+    deb: "http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.22_amd64.deb"
 
 - name: Install DB packages
   become: yes
