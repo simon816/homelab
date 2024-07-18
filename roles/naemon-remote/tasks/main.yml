@@ -1,7 +1,12 @@
 - name: Install monitoring plugins
   become: yes
   apt:
-    name: monitoring-plugins-basic
+    name: "{{ packages }}"
+    install_recommends: no
+  vars:
+    packages:
+      - monitoring-plugins-basic
+      - monitoring-plugins-standard
 
 - name: Monitoring user group
   become: yes
