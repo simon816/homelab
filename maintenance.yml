@@ -1,5 +1,5 @@
 ---
-- hosts: lab_servers
+- hosts: all
   tasks:
     - name: Update packages
       become: yes
