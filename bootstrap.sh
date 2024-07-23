@@ -71,7 +71,7 @@ misc_disk() {
 if [ "$1" == "disks" ]
 then
     create_disk gateway
-    create_disk dbserver
+    create_disk dbserver 5G
     aux_disk db-data 5G
     create_disk cloud 6G
     create_disk sinkhole 6G
