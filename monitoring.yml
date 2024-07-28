@@ -43,4 +43,4 @@
       authorized_key:
         user: naemon
         key: "{{ hostvars[groups['controller'][0]]['monitoring_ssh_key']['public_key'] }}"
-        key_options: "from=\"{{ hostvars[groups['controller'][0]]['ansible_facts']['all_ipv4_addresses'] | join(',') }}\""
+        key_options: "from=\"{{ hostvars[groups['controller'][0]]['ansible_facts']['all_ipv4_addresses'] | sort | join(',') }}\""
