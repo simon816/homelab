@@ -147,6 +147,11 @@
     - { name: dbport, value: "{{ db.nextcloud.port }}" }
     - { name: dbuser, value: "{{ db.nextcloud.user }}" }
     - { name: dbpassword, value: "{{ db.nextcloud.pass }}" }
+    - { name: overwrite.cli.url, value: "https://nextcloud.simon816.com/" }
+    - { name: mail_smtpmode, value: sendmail }
+    - { name: mail_sendmailmode, value: pipe }
+    - { name: mail_from_address, value: nextcloud }
+    - { name: mail_domain, value: cloud.simon816.com }
   loop_control:
     loop_var: config
 
