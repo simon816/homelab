@@ -4,3 +4,4 @@
     - gateway
     - bind9
     - naemon-remote
+    - auto-updates

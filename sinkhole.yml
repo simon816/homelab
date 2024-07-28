@@ -80,6 +80,7 @@
 
   roles:
     - naemon-remote
+    - auto-updates
     - sonarr
     - radarr
     - jackett

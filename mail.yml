@@ -57,6 +57,7 @@
   roles:
     - intnet-node
     - naemon-remote
+    - auto-updates
     - mail-server
     - role: backup-spool
       vars:

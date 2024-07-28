@@ -26,6 +26,7 @@
   roles:
     - intnet-node
     - naemon-remote
+    - auto-updates
     - mariadb
     - mongodb
     - postgres

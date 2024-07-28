@@ -1,0 +1,5 @@
+- name: Configure
+  become: yes
+  copy:
+    src: update.conf
+    dest: /etc/apt/apt.conf.d/80-custom-auto-updates

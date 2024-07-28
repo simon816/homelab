@@ -11,6 +11,7 @@
   roles:
     - intnet-node
     - naemon-remote
+    - auto-updates
     - gitea
     - role: nginx
       vars:
