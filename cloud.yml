@@ -31,6 +31,14 @@
     hostname:
       name: cloud.simon816.com
 
+  # sudo tries to DNS query own hostname, return localhost
+  - name: Own hostname is localhost
+    become: yes
+    lineinfile:
+      path: /etc/hosts
+      line: "127.0.0.1 localhost cloud.simon816.com"
+      search_string: "127.0.0.1"
+
   tasks:
   - name: hosts file self mapping
     become: yes

@@ -27,3 +27,11 @@
     path: /etc/aliases
     line: "root: me@simon816.com"
     regex: "^root:"
+
+# XXX: Temp until DNS forwarding works correctly
+- name: mail hostname
+  become: yes
+  lineinfile:
+    path: /etc/hosts
+    line: "10.80.0.8 mail.simon816.com"
+    search_string: "mail.simon816.com"
