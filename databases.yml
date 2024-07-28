@@ -23,8 +23,14 @@
       path: /srv
       state: mounted
 
+  - name: Set hostname
+    become: yes
+    hostname:
+      name: dbserver.simon816.com
+
   roles:
     - intnet-node
+    - mail-forwarder
     - naemon-remote
     - auto-updates
     - mariadb

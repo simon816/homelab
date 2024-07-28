@@ -50,6 +50,7 @@
   loop:
     - header_checks
     - sender_map
+    - sender_map_machines
     - sender_canonical
     - password
     - virtual

@@ -8,8 +8,14 @@
       name: git
       password_lock: yes
 
+  - name: Set hostname
+    become: yes
+    hostname:
+      name: dev.simon816.com
+
   roles:
     - intnet-node
+    - mail-forwarder
     - naemon-remote
     - auto-updates
     - gitea

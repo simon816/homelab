@@ -62,6 +62,11 @@
       path: /srv
       state: mounted
 
+  - name: Set hostname
+    become: yes
+    hostname:
+      name: sinkhole.simon816.com
+
   - name: Ensure sinkhole LFS mount point
     become: yes
     file:
@@ -79,6 +84,7 @@
       state: mounted
 
   roles:
+    - mail-forwarder
     - naemon-remote
     - auto-updates
     - sonarr

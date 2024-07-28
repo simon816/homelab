@@ -44,6 +44,11 @@
     loop:
       - { name: simon, uid: 1001 }
 
+  - name: Set hostname
+    become: yes
+    hostname:
+      name: mail.simon816.com
+
   tasks:
   - name: Backup directory
     become: yes

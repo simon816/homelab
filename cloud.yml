@@ -26,6 +26,11 @@
       update_cache: yes
       name: nfs-common
 
+  - name: Set hostname
+    become: yes
+    hostname:
+      name: cloud.simon816.com
+
   tasks:
   - name: hosts file self mapping
     become: yes
@@ -39,6 +44,7 @@
       - nextcloud.simon816.com
 
   roles:
+    - mail-forwarder
     - naemon-remote
     - auto-updates
     - apache

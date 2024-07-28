@@ -1,7 +1,16 @@
 ---
 - hosts: gateway
+
+  pre_tasks:
+
+  - name: Set hostname
+    become: yes
+    hostname:
+      name: gateway.simon816.com
+
   roles:
     - gateway
     - bind9
+    - mail-forwarder
     - naemon-remote
     - auto-updates

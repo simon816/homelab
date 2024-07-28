@@ -1,0 +1,6 @@
+@cloud.simon816.com msmtp
+@controller.simon816.com msmtp
+@dbserver.simon816.com msmtp
+@dev.simon816.com msmtp
+@gateway.simon816.com msmtp
+@sinkhole.simon816.com msmtp
