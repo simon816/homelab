@@ -1,0 +1,8 @@
+- name: "Config value {{ name }}"
+  become: yes
+  become_user: www-data
+  command: "php /var/www/nextcloud/occ config:system:set {{ name }} {{ item.key }} --type {{ item.value.type | default('string') }} --value={{ item.value.value | quote }}"
+  when: "(nextcloud_config.stdout | from_json).system.get(name) != dict((items | map(attribute='key')) | zip(items | map(attribute='value') | map(attribute='value')))"
+  loop: "{{ value | dict2items }}"
+  vars:
+    items: "{{ value | dict2items }}"

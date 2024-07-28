@@ -1,0 +1,14 @@
+- name: "Config value {{ name }}"
+  become: yes
+  become_user: www-data
+  command: "php /var/www/nextcloud/occ config:system:set {{ name }} {{ idx }} --type {{ type | default('string') }} --value={{ item | quote }}"
+  when: (nextcloud_config.stdout | from_json).system.get(name) != value
+  loop: "{{ value }}"
+  loop_control:
+    index_var: idx
+
+- name: "Clear trailing array for {{ name }}"
+  become: yes
+  become_user: www-data
+  command: "php /var/www/nextcloud/occ config:system:delete {{ name }} {{ item }}"
+  with_items: "{{ range(value | length, (nextcloud_config.stdout | from_json).system.get(name, []) | length) | list }}"

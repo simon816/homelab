@@ -128,15 +128,38 @@
     chdir: /var/www/nextcloud
   when: nextcloud_status.changed and not (nextcloud_status.stdout | from_json).installed
 
+- name: Get nextcloud config
+  become: yes
+  become_user: www-data
+  command: php /var/www/nextcloud/occ config:list --private
+  changed_when: False
+  register: nextcloud_config
+
 - name: Nextcloud config
+  include_tasks: config.yml
+  loop:
+    - { name: mysql.utf8mb4, type: boolean, value: true }
+    - { name: htaccess.RewriteBase, value: / }
+    - { name: default_locale, value: en_GB }
+    - { name: default_phone_region, value: GB }
+    - { name: dbname, value: "{{ db.nextcloud.name }}" }
+    - { name: dbhost, value: "{{ db.nextcloud.host }}" }
+    - { name: dbport, value: "{{ db.nextcloud.port }}" }
+    - { name: dbuser, value: "{{ db.nextcloud.user }}" }
+    - { name: dbpassword, value: "{{ db.nextcloud.pass }}" }
+  loop_control:
+    loop_var: config
+
+- name: trusted_domains config
+  include_tasks: config_array.yml
+  vars:
+    name: trusted_domains
+    value: [localhost, nextcloud.simon816.com]
+
+- name: Nextcloud setup
   become: yes
   become_user: www-data
   shell: |
-      php /var/www/nextcloud/occ config:system:set mysql.utf8mb4 --type boolean --value="true"
-      php /var/www/nextcloud/occ config:system:set htaccess.RewriteBase --value='/'
-      php /var/www/nextcloud/occ config:system:set default_locale --value='en_GB'
-      php /var/www/nextcloud/occ config:system:set trusted_domains 1 --value="nextcloud.simon816.com"
-      php /var/www/nextcloud/occ config:system:set default_phone_region --value GB
       php /var/www/nextcloud/occ maintenance:repair
       php /var/www/nextcloud/occ db:convert-filecache-bigint --no-interaction
       php /var/www/nextcloud/occ maintenance:update:htaccess

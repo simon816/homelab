@@ -1,0 +1,5 @@
+- name: "Config value {{ config.name }}"
+  become: yes
+  become_user: www-data
+  command: "php /var/www/nextcloud/occ config:system:set {{ config.name }} --type {{ config.type | default('string') }} --value={{ config.value | quote }}"
+  when: (nextcloud_config.stdout | from_json).system.get(config.name) != config.value
