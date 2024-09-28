@@ -41,6 +41,10 @@ mailbox_size_limit = 0
 mailbox_transport = lmtp:unix:private/dovecot-lmtp
 virtual_alias_maps = hash:/etc/postfix/virtual
 sender_canonical_maps = hash:/etc/postfix/sender_canonical
+# Add Message-ID if missing, from authenticated clients
+# As a consequence, set sender_canonical_classes to not map From address with sender_canonical_maps
+local_header_rewrite_clients = permit_inet_interfaces permit_sasl_authenticated
+sender_canonical_classes = envelope_sender
 
 smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
 smtp_sasl_auth_enable = yes
