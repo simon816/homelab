@@ -123,6 +123,13 @@
   notify:
     - reload naemon
 
+- name: Naemon logrotate
+  become: yes
+  lineinfile:
+    path: /etc/logrotate.d/naemon-core
+    line: "rotate 30"
+    regex: "rotate "
+
 - name: Enable nsca service
   become: yes
   service:
