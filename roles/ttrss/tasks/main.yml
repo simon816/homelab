@@ -10,7 +10,7 @@
 - name: Ensure ttrss dir
   become: yes
   file:
-    name: /var/www/ttrss2
+    name: /var/www/ttrss
     state: directory
     owner: www-data
     group: www-data
@@ -20,7 +20,7 @@
   become_user: www-data
   git:
     repo: "https://github.com/tt-rss/tt-rss.git"
-    dest: /var/www/ttrss2
+    dest: /var/www/ttrss
   notify:
     - restart apache
     - restart ttrss
@@ -30,14 +30,14 @@
   become_user: www-data
   git:
     repo: "https://github.com/tt-rss/tt-rss-plugin-data-migration.git"
-    dest: /var/www/ttrss2/plugins.local/data_migration
+    dest: /var/www/ttrss/plugins.local/data_migration
 
 - name: ttrss config
   become: yes
   become_user: www-data
   template:
     src: config.php.j2
-    dest: /var/www/ttrss2/config.php
+    dest: /var/www/ttrss/config.php
   notify:
     - restart ttrss
 
@@ -45,15 +45,15 @@
   become: yes
   copy:
     src: ttrss.conf
-    dest: /etc/apache2/sites-available/ttrss2.conf
+    dest: /etc/apache2/sites-available/ttrss.conf
   notify:
     - restart apache
 
 - name: Enable ttrss apache site
   become: yes
-  command: a2ensite ttrss2
+  command: a2ensite ttrss
   args:
-    creates: /etc/apache2/sites-enabled/ttrss2.conf
+    creates: /etc/apache2/sites-enabled/ttrss.conf
   notify:
     - restart apache
 
@@ -61,13 +61,13 @@
   become: yes
   copy:
     src: ttrss_backend.service
-    dest: /etc/systemd/system/ttrss_backend2.service
+    dest: /etc/systemd/system/ttrss_backend.service
   notify:
     - restart ttrss
 
 - name: Enable ttrss service
   become: yes
   service:
-    name: ttrss_backend2
+    name: ttrss_backend
     enabled: yes
     state: started
