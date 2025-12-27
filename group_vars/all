@@ -64,7 +64,7 @@ db:
   ttrss:
     name: ttrss
     host: 10.80.0.5
-    port: 3306
+    port: 5432
     user: ttrss
     pass: !vault |
           $ANSIBLE_VAULT;1.1;AES256
