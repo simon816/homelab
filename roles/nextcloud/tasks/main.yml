@@ -13,7 +13,7 @@
     - php-curl
     - php-mbstring
     - php-intl
-    - php-imagick
+    - "php{{ php_version }}-imagick"
     - php-xml
     - php-zip
     - php-bcmath
