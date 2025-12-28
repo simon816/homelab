@@ -60,12 +60,12 @@
   copy:
     src: youtube-fetcher.service
     dest: /etc/systemd/system/youtube-fetcher.service
-  notify:
-    - restart youtube-fetcher
+#  notify:
+#    - restart youtube-fetcher
 
 - name: Enable youtube-fetcher service
   become: yes
   service:
     name: youtube-fetcher
-    enabled: yes
-    state: started
+    enabled: no
+    state: stopped
