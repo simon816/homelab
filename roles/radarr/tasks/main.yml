@@ -5,7 +5,6 @@
   vars:
     packages:
       - curl
-      - mediainfo
       - sqlite3
 
 - name: Get is radarr installed

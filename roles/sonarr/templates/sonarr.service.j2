@@ -1,12 +1,14 @@
 [Unit]
 Description=Sonarr Daemon
-After=network.target
+After=syslog.target network.target
 RequiresMountsFor=/srv
 
 [Service]
-ExecStart=/usr/bin/env mono /usr/lib/sonarr/bin/Sonarr.exe -nobrowser
+ExecStart=/opt/Sonarr/Sonarr -nobrowser
 User=sinkhole
 Group=sinkhole
+TimeoutStopSec=20
+KillMode=process
 Restart=on-failure
 RestartSec=10
 StandardOutput=syslog

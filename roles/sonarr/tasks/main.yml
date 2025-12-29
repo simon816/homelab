@@ -1,21 +1,38 @@
-- name: Ensure apt keys
-  become: yes
-  apt_key:
-    keyserver: keyserver.ubuntu.com
-    id: "2009837CBFFD68F45BC180471F4F90DE2A9B4BF8"
-
-- name: Ensure apt repositories
-  become: yes
-  apt_repository:
-    repo: "deb https://apt.sonarr.tv/ubuntu focal main"
-
 - name: Install packages
   become: yes
   apt:
     name: "{{ packages }}"
   vars:
     packages:
-      - sonarr
+      - curl
+      - sqlite3
+
+- name: Remove old package
+  become: yes
+  apt:
+    name: sonarr
+    state: absent
+
+- name: Get is sonarr installed
+  stat:
+    path: /opt/Sonarr
+  register: sonarr_dir_stat
+
+- name: Download sonarr
+  get_url:
+    url: "https://services.sonarr.tv/v1/download/main/latest?version=4&os=linux&arch=x64"
+    dest: /tmp/
+  when: not sonarr_dir_stat.stat.exists
+  register: sonarr_tar
+
+- name: Install sonarr
+  become: yes
+  unarchive:
+    src: "{{ sonarr_tar.dest }}"
+    remote_src: yes
+    creates: /opt/Sonarr
+    dest: /opt/
+  when: sonarr_tar is not skipped
 
 - name: Configure sonarr service
   become: yes
