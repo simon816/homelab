@@ -5,5 +5,5 @@
 - name: restart vpn
   become: yes
   service:
-    name: openvpn-client@upstream
+    name: wg-quick@upstream
     state: restarted

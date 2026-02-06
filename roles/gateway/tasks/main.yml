@@ -29,27 +29,27 @@
   notify:
     - save iptables
 
-- name: Install openvpn
+- name: Install wireguard
   become: yes
   apt:
     name: "{{ packages }}"
   vars:
     packages:
-      - openvpn
-      - openvpn-systemd-resolved
+      - wireguard
+      - openresolv
 
 - name: Install VPN config
   become: yes
   copy:
     src: vpn-config/
-    dest: /etc/openvpn/client/
+    dest: /etc/wireguard
   notify:
     - restart vpn
 
 - name: Ensure upstream VPN started
   become: yes
   service:
-    name: openvpn-client@upstream
+    name: wg-quick@upstream
     state: started
     enabled: yes
 
@@ -58,7 +58,7 @@
   iptables:
     table: nat
     chain: POSTROUTING
-    out_interface: tun0
+    out_interface: upstream
     source: 10.80.0.0/24 # not strictly nessesary
     jump: MASQUERADE
   notify:
