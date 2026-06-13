@@ -3,7 +3,7 @@
   get_url:
     url: "https://build.opensuse.org/projects/home:naemon/signing_keys/download?kind=gpg"
     dest: /etc/apt/trusted.gpg.d/naemon.asc
-    checksum: sha256:ed9a1106952957cc990c5a42287f82693c6982b3bad434c115dadf33ba5031a4
+    checksum: sha256:22cf86f5e64cd9a9d506d8d91f115fba9d2764ecf502f5e5c77e84c4e8721adc
 
 - name: Ensure apt repositories
   become: yes
