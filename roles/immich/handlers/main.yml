@@ -1,0 +1,7 @@
+- name: restart immich
+  become: yes
+  become_user: root
+  systemd:
+    daemon_reload: yes
+    name: immich
+    state: restarted

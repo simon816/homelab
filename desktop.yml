@@ -1,0 +1,9 @@
+---
+- hosts: hypervisor
+  remote_user: simon
+
+  roles:
+    - immich
+    - role: nginx
+      vars:
+        site: desktop

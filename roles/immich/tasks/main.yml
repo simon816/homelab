@@ -1,0 +1,44 @@
+- name: Ensure immich directory
+  become: yes
+  become_user: root
+  file:
+    path: /opt/immich
+    state: directory
+
+- name: Ensure immich environment file
+  become: yes
+  become_user: root
+  copy:
+    src: environment
+    dest: /opt/immich/.env
+    owner: root
+    group: root
+    mode: 0400
+  notify:
+    - restart immich
+
+- name: Ensure immich docker compose
+  become: yes
+  become_user: root
+  copy:
+    src: docker-compose.yml
+    dest: /opt/immich/docker-compose.yml
+  notify:
+    - restart immich
+
+- name: Ensure immich service
+  become: yes
+  become_user: root
+  copy:
+    src: immich.service
+    dest: /etc/systemd/system/
+  notify:
+    - restart immich
+
+- name: Enable immich service
+  become: yes
+  become_user: root
+  service:
+    name: immich
+    enabled: yes
+    state: started

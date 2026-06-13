@@ -1,0 +1,17 @@
+[Unit]
+Description=Immich
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/immich
+ExecStart=/usr/bin/docker compose up
+ExecStop=/usr/bin/docker compose down
+Restart=always
+RestartSec=10s
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target
