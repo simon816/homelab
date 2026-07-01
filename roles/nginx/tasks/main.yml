@@ -46,6 +46,14 @@
   notify:
     - restart nginx
 
+- name: nginx default reject
+  become: yes
+  copy:
+    src: default-reject.conf
+    dest: /etc/nginx/conf.d/00-default-reject.conf
+  notify:
+    - restart nginx
+
 - name: Configure nginx
   become: yes
   copy:
