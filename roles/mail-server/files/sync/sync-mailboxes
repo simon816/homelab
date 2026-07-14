@@ -15,6 +15,8 @@ REMOTE_PREFIX = 'Remote'
 INCOMING_REMOTE = 'Incoming'
 # local mailbox for missed incoming remote mail
 INCOMING_IMPORT = 'INBOX'
+# Mail sent at remote outside of mail server
+REMOTE_SENT = 'Sent.Posteo'
 # Mailbox for a copy of recent mail
 REMOTE_RECENT = 'Incoming.Recent'
 # Filter to identify emails delivered to remote
@@ -23,7 +25,7 @@ REMOTE_DELIVERED = ('(', 'header', 'Delivered-To', 'simon816@posteo.net', 'OR', 
 IGNORE_LOCAL = ('Junk',)
 IGNORE_WILDCARD = ('Archive',)
 # Do not delete these remote mailboxes
-IGNORE_REMOTE = (*IGNORE_LOCAL, INCOMING_REMOTE, REMOTE_RECENT, 'Spam-Log')
+IGNORE_REMOTE = (*IGNORE_LOCAL, INCOMING_REMOTE, REMOTE_RECENT, REMOTE_SENT, 'Spam-Log')
 # Ignore changes to these flags
 IGNORE_FLAGS = set(('\\Recent',))
 # Apply changes to this many mails at a time
@@ -233,6 +235,26 @@ def sync_incoming(r):
         search.extend(doveadm.search_or(*(['uid', uid] for uid in delete_list)))
         doveadm.delete(search)
 
+def sync_sent(r):
+    mails = doveadm.fetch('uid imap.envelope', ['mailbox', REMOTE_PREFIX + '.' + REMOTE_SENT, 'all'])
+
+    move_list = []
+    for mail in mails:
+        uid = mail['uid']
+        env = r.read_envelope(mail['imap.envelope'])
+
+        print("[%s]" % uid.decode('utf8'), "Found sent mail:", env.message_id)
+        search = doveadm.search(['header', 'Message-ID', env.message_id, 'mailbox', 'Sent'])
+
+        if not len(list(search)):
+            print("[%s]" % uid.decode('utf8'), "importing to Sent")
+            move_list.append(uid)
+
+    if move_list:
+        search = ['mailbox', REMOTE_PREFIX + '.' + REMOTE_SENT]
+        search.extend(doveadm.search_or(*(['uid', uid] for uid in move_list)))
+        doveadm.move('Sent', search)
+
 def prune_recent():
     print("Pruning recent mail mailbox")
     doveadm.delete(['mailbox', REMOTE_PREFIX + '.' + REMOTE_RECENT, 'BEFORE', '30d'])
@@ -274,11 +296,14 @@ if __name__ == '__main__':
         for mailbox in sys.argv[1:]:
             if mailbox == INCOMING_REMOTE:
                 sync_incoming(r)
+            elif mailbox == REMOTE_SENT:
+                sync_sent(r)
             else:
                 sync_mailbox(r, changeset, mailbox, get_remote_boxes())
         changeset.apply()
     else:
         sync_incoming(r)
+        sync_sent(r)
         sync_all_mailboxes(r, changeset)
         prune_recent()
 
