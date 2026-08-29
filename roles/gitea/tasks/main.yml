@@ -10,10 +10,12 @@
 - name: Download gitea
   become: yes
   get_url:
-    url: "https://dl.gitea.io/gitea/1.17.2/gitea-1.17.2-linux-amd64"
-    checksum: "sha256:d0e903671ae04007c5956beb65985825795c1d9b24c9f354b48008fd44db1b57"
+    url: "https://dl.gitea.io/gitea/{{ gitea_version }}/gitea-{{ gitea_version }}-linux-amd64"
+    checksum: "{{ version_checksum }}"
     dest: /usr/local/bin/gitea
     mode: 0755
+  notify:
+    restart gitea service
 
 - name: Create data directories
   become: yes
